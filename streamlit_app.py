@@ -1,4 +1,4 @@
-# app.py - CASINOPRO COMPLETO CON KNOWLEDGE BASE DE SLOTTECH FORUM
+# app.py - CASINOPRO COMPLETO CON KNOWLEDGE BASE TÉCNICA
 import streamlit as st
 import pandas as pd
 from datetime import datetime
@@ -11,27 +11,27 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# ==================== SISTEMA DE EXPERIENCIA HUMANA + SLOTTECH FORUM ====================
-class HumanExperienceSystem:
+# ==================== SISTEMA DE EXPERIENCIA TÉCNICA ====================
+class TechnicalExperienceSystem:
     def __init__(self, db):
         self.db = db
         self.experience_base = self.setup_experience_base()
     
     def setup_experience_base(self):
-        """Base de conocimiento ampliada con sabiduría del foro Slottech"""
+        """Base de conocimiento técnico especializada"""
         return {
             # ========== ARISTOCRAT MODERNA ==========
             'aristocrat_helix': [
-                "🎯 **Foro Slottech**: Helix tiene problemas de touch screen - Usar utilidad de calibración KONAMI, no la estándar",
-                "💡 **Truco verificado**: Reset completo: Desconectar 10 min + POWER + SERVICE simultáneo",
+                "🎯 **Experiencia técnica**: Helix tiene problemas de touch screen - Usar utilidad de calibración específica",
+                "💡 **Procedimiento verificado**: Reset completo: Desconectar 10 min + POWER + SERVICE simultáneo",
                 "🔧 **Solución Ethernet**: Configurar IP estática, DHCP causa problemas intermitentes",
                 "⚠️ **Error común**: No actualizar firmware Helix Core - Causa crashes aleatorios"
             ],
             'aristocrat_oasis': [
-                "🎯 **Experiencia colectiva**: Oasis necesita limpieza mensual de ventiladores - Sobrecalienta fácil",
+                "🎯 **Conocimiento técnico**: Oasis necesita limpieza mensual de ventiladores - Sobrecalienta fácil",
                 "💡 **Diagnóstico rápido**: Si no bootea, verificar módulo System Board primero",
                 "🔧 **Audio surround**: Problemas de audio = 80% conectores amplificador sueltos",
-                "📊 **Estadística foro**: 70% fallas Oasis son de fuente de poder"
+                "📊 **Estadística técnica**: 70% fallas Oasis son de fuente de poder"
             ],
             'aristocrat_edge': [
                 "🎯 **Patrón conocido**: Edge X falla en ambientes cálidos - Mejorar ventilación",
@@ -41,50 +41,50 @@ class HumanExperienceSystem:
             
             # ========== BALLY/SG MODERNO ==========
             'bally_alpha_pro': [
-                "🎯 **Sabiduría foro**: Alpha Pro = PC industrial - Diagnosticar como computadora",
+                "🎯 **Arquitectura conocida**: Alpha Pro = PC industrial - Diagnosticar como computadora",
                 "💡 **Truco BIOS**: F2 durante boot para diagnóstico hardware integrado",
                 "🔧 **SAS 6.0+**: Problemas comunicación = Verificar switch SAS/ethernet",
                 "🔄 **Mantenimiento**: Limpiar ventiladores CPU mensualmente - Critical"
             ],
             'bally_alpha_2': [
-                "🎯 **Experiencia real**: Alpha 2 falla por temperatura - Instalar ventilador adicional",
+                "🎯 **Experiencia técnica**: Alpha 2 falla por temperatura - Instalar ventilador adicional",
                 "💡 **Diagnóstico**: Usar Bally Diagnostic Tool v3.1+ para tests completos",
                 "🔧 **Pantalla HD**: Artefactos en video = Reemplazar cable LVDS primero",
                 "📈 **Estadística**: 60% problemas son software, 40% hardware"
             ],
             'bally_iview': [
-                "🎯 **Foro verificado**: iVIEW display issues = 90% cable flat dañado",
+                "🎯 **Caso verificado**: iVIEW display issues = 90% cable flat dañado",
                 "💡 **Solución rápida**: Reconectar todos los cables del display",
                 "🔧 **Player tracking**: Datos no suben = Verificar conexión network"
             ],
             
             # ========== KONAMI MODERNO ==========
             'konami_concerto': [
-                "🎯 **Conocimiento colectivo**: Concerto - Pantalla curva necesita calibración especial",
-                "💡 **Truco exclusivo**: Usar Konami Service Tool para calibración precisa",
+                "🎯 **Conocimiento técnico**: Concerto - Pantalla curva necesita calibración especial",
+                "💡 **Procedimiento exclusivo**: Usar Konami Service Tool para calibración precisa",
                 "🔧 **Audio 7.1**: Canales muertos = Revisar amplificador interno primero",
                 "⚠️ **Problema conocido**: Sistema se traba con updates incompletos"
             ],
             'konami_kx': [
-                "🎯 **Experiencia foro**: KX Platform - Verificar voltajes +5V, +12V regularmente",
+                "🎯 **Documentación técnica**: KX Platform - Verificar voltajes +5V, +12V regularmente",
                 "💡 **Diagnóstico**: LED de status indica tipo de falla (ver manual)",
                 "🔧 **Video Output**: No signal = Revisar tarjeta video integrada"
             ],
             'konami_helix': [
-                "🎯 **Patrón verificado**: Helix Core necesita reset mensual preventivo",
+                "🎯 **Patrón documentado**: Helix Core necesita reset mensual preventivo",
                 "💡 **Mantenimiento**: Limpiar filtros de aire cada 2 semanas",
                 "🔧 **Player Station**: Problemas touch = Calibrar con herramienta Konami"
             ],
             
             # ========== IGT MODERNO ==========
             'igt_peak': [
-                "🎯 **Sabiduría técnica**: Peak Cabinet - CPU sobrecalienta en verano",
+                "🎯 **Análisis técnico**: Peak Cabinet - CPU sobrecalienta en verano",
                 "💡 **Solución**: Instalar ventilador adicional en compartment CPU",
                 "🔧 **Display Box**: Problemas = Verificar conexiones LVDS y poder",
-                "📊 **Foro stats**: 45% fallas son thermal-related"
+                "📊 **Estadísticas**: 45% fallas son thermal-related"
             ],
             'igt_s_plus': [
-                "🎯 **Experiencia colectiva**: S Plus más estable que S2000 - Menos fallas MPU",
+                "🎯 **Comparativa técnica**: S Plus más estable que S2000 - Menos fallas MPU",
                 "💡 **Diagnóstico**: Menú servicio extendido con más opciones",
                 "🔧 **Power Supply**: Reemplazar con fuentes certificadas IGT",
                 "⚠️ **Alerta**: No usar fuentes genéricas - Dañan main board"
@@ -92,29 +92,29 @@ class HumanExperienceSystem:
             
             # ========== EVERI & NOVOMATIC ==========
             'everi_cinevision': [
-                "🎯 **Foro Slottech**: Cinevision - Sistema multimedia complejo",
-                "💡 **Truco**: Reset completo desconectando 5 minutos",
+                "🎯 **Especificaciones técnicas**: Cinevision - Sistema multimedia complejo",
+                "💡 **Procedimiento**: Reset completo desconectando 5 minutos",
                 "🔧 **Display System**: Problemas = Verificar controlador video",
                 "🎵 **Audio**: Surround issues = Revisar configuración audio"
             ],
             'novomatic_axxis': [
-                "🎯 **Conocimiento europeo**: Axxis - Tecnología alemana, diferente enfoque",
-                "💡 **Diagnóstico**: Usar herramientas Novomatic específicas",
+                "🎯 **Tecnología especializada**: Axxis - Enfoque técnico diferente",
+                "💡 **Diagnóstico**: Usar herramientas específicas del fabricante",
                 "🔧 **Display**: Problemas = Verificar tarjeta gráfica dedicada",
-                "⚠️ **Importante**: Repuestos solo originales Novomatic"
+                "⚠️ **Importante**: Repuestos solo originales"
             ],
             
             # ========== ACEPTADORES INTELIGENTES ==========
             'jcm_ivizion': [
-                "🎯 **Experiencia avanzada**: iVizion - IA necesita entrenamiento regular",
+                "🎯 **Tecnología avanzada**: iVizion - Sistema necesita entrenamiento regular",
                 "💡 **Calibración**: Usar billetes de diferentes condiciones",
                 "🔧 **Image Analysis**: Limpiar lentes de cámara semanalmente",
                 "🌐 **Network**: Configurar IP estática para mejor performance"
             ],
             'mei_cashflow': [
-                "🎯 **Foro verificado**: CashFlow - Sistema complejo pero confiable",
+                "🎯 **Arquitectura comprobada**: CashFlow - Sistema complejo pero confiable",
                 "💡 **Ethernet**: Problemas = Verificar configuración red",
-                "🔧 **Diagnóstico**: Usar MEI Diagnostic Suite completo",
+                "🔧 **Diagnóstico**: Usar Diagnostic Suite completo",
                 "⚠️ **Alerta**: No desconectar durante transacciones"
             ],
             
@@ -126,26 +126,26 @@ class HumanExperienceSystem:
                 "📱 **Tip**: Pantallas capacitivas = limpiar con paño microfibra"
             ],
             'comunicacion_red': [
-                "🎯 **Sabiduría network**: Problemas = 80% configuración, 20% hardware",
+                "🎯 **Análisis network**: Problemas = 80% configuración, 20% hardware",
                 "💡 **Solución**: IP estática > DHCP para estabilidad",
                 "🔧 **Diagnóstico**: Ping test primero, luego protocolos",
-                "🌐 **Foro tip**: Verificar firewalls y VLAN configuration"
+                "🌐 **Recomendación**: Verificar firewalls y VLAN configuration"
             ],
             'fuentes_poder_modernas': [
-                "🎯 **Conocimiento colectivo**: Fuentes modernas = más eficientes pero sensibles",
+                "🎯 **Ingeniería de potencia**: Fuentes modernas = más eficientes pero sensibles",
                 "💡 **Diagnóstico**: Medir ripple y ruido, no solo voltaje",
                 "🔧 **Mantenimiento**: Limpiar ventiladores mensualmente",
                 "⚡ **Estadística**: 60% fallas son por sobrecalentamiento"
             ],
             
-            # ========== TRUCOS AVANZADOS FORO ==========
-            'trucos_avanzados': [
+            # ========== PROCEDIMIENTOS AVANZADOS ==========
+            'procedimientos_avanzados': [
                 "🔧 **Banco de pruebas**: Tener aceptador de respuesto para diagnóstico rápido",
                 "📊 **Documentación**: Fotografiar cada reparación para referencia futura",
                 "🔌 **Herramientas**: Multímetro true RMS + fuente variable esenciales",
                 "🎯 **Diagnóstico sistemático**: Siempre comenzar por lo simple",
-                "🤝 **Red de contactos**: Otros técnicos = mejor fuente de soluciones",
-                "📚 **Actualización constante**: Seguir foros y entrenamientos regularmente"
+                "🤝 **Colaboración**: Otros técnicos = mejor fuente de soluciones",
+                "📚 **Actualización constante**: Seguir capacitaciones regularmente"
             ],
             
             'reglas_empiricas_modernas': {
@@ -166,8 +166,8 @@ class HumanExperienceSystem:
             }
         }
     
-    def get_human_insight(self, sintoma, modelo=None):
-        """Proporciona perspectivas humanas basadas en experiencia colectiva"""
+    def get_technical_insight(self, sintoma, modelo=None):
+        """Proporciona perspectivas técnicas basadas en experiencia"""
         insights = []
         sintoma_lower = sintoma.lower()
         modelo_lower = modelo.lower() if modelo else ""
@@ -195,9 +195,9 @@ class HumanExperienceSystem:
             if keyword in sintoma_lower:
                 insights.extend(self.experience_base.get(categoria, []))
         
-        # Trucos avanzados si no hay suficientes insights
+        # Procedimientos avanzados si no hay suficientes insights
         if len(insights) < 2:
-            insights.extend(self.experience_base.get('trucos_avanzados', []))
+            insights.extend(self.experience_base.get('procedimientos_avanzados', []))
         
         # Reglas de tiempo si se menciona tiempo
         if any(word in sintoma_lower for word in ['tiempo', 'dura', 'rapido', 'lento']):
@@ -206,7 +206,7 @@ class HumanExperienceSystem:
                 insights.append(f"   • {tarea.replace('_', ' ').title()}: {tiempo}")
         
         return insights if insights else [
-            "🔍 **Perspectiva foro**: Problema común - Revisar conexiones primero",
+            "🔍 **Perspectiva técnica**: Problema común - Revisar conexiones primero",
             "💡 **Enfoque sugerido**: Diagnosticar sistemáticamente de simple a complejo",
             "🎯 **Prioridad**: Comenzar por lo que falla más frecuentemente según estadísticas"
         ]
@@ -334,21 +334,21 @@ class DiagnosticSystemEnhanced:
     def __init__(self, db):
         self.db = db
         self.diagnostic_system = DiagnosticSystem(db)
-        self.human_system = HumanExperienceSystem(db)
+        self.technical_system = TechnicalExperienceSystem(db)
     
     def get_enhanced_diagnosis(self, question, aceptador_seleccionado, contexto_adicional=""):
-        """Diagnóstico que combina manuales técnicos + experiencia humana"""
+        """Diagnóstico que combina manuales técnicos + experiencia técnica"""
         
         # Diagnóstico técnico base
         respuesta_tecnica = self.diagnostic_system.get_diagnostic_response(question, aceptador_seleccionado)
         
-        # Análisis humano basado en experiencia
-        insights_humanos = self.human_system.get_human_insight(question, aceptador_seleccionado)
+        # Análisis técnico basado en experiencia
+        insights_tecnicos = self.technical_system.get_technical_insight(question, aceptador_seleccionado)
         
         # Combinar respuestas
         respuesta_completa = {
             **respuesta_tecnica,
-            'perspectiva_humana': insights_humanos,
+            'perspectiva_tecnica': insights_tecnicos,
             'nivel_confianza': self.estimate_confidence(question, aceptador_seleccionado),
             'recomendacion_prioridad': self.get_priority_recommendation(question)
         }
@@ -443,8 +443,8 @@ if 'enhanced_diagnostic' not in st.session_state:
     st.session_state.enhanced_diagnostic = DiagnosticSystemEnhanced(st.session_state.db)
 
 # ==================== INTERFAZ PRINCIPAL ====================
-st.title("🎰 CASINOPRO - SISTEMA EXPERTO CON SABIDURÍA SLOTTECH")
-st.markdown("**✅ Datos técnicos + 🤖 Diagnóstico IA + 👨‍🔧 Experiencia Colectiva del Foro**")
+st.title("🎰 CASINOPRO - SISTEMA EXPERTO TÉCNICO")
+st.markdown("**✅ Datos técnicos + 🤖 Diagnóstico IA + 👨‍🔧 Experiencia Técnica Especializada**")
 st.markdown("---")
 
 # MENÚ PRINCIPAL MEJORADO
@@ -453,7 +453,7 @@ menu = st.selectbox(
     [
         "🏠 INICIO", 
         "🤖 DIAGNÓSTICO INTELIGENTE MEJORADO",
-        "👨‍🔧 SABIDURÍA TÉCNICA SLOTTECH",
+        "👨‍🔧 BASE DE CONOCIMIENTO TÉCNICO",
         "💰 MANUALES ACEPTADORES",
         "🎰 MÁQUINAS REGISTRADAS", 
         "📦 INVENTARIO COMPLETO"
@@ -464,8 +464,8 @@ st.markdown("---")
 
 # ==================== DIAGNÓSTICO INTELIGENTE MEJORADO ====================
 if menu == "🤖 DIAGNÓSTICO INTELIGENTE MEJORADO":
-    st.header("🤖 Diagnóstico Inteligente + Sabiduría Slottech")
-    st.success("**💡 Ahora con conocimiento práctico extraído del foro Slottech**")
+    st.header("🤖 Diagnóstico Inteligente + Experiencia Técnica")
+    st.success("**💡 Sistema con conocimiento técnico especializado y procedimientos verificados**")
     
     # Selección de aceptador
     aceptador_seleccionado = st.selectbox(
@@ -518,9 +518,9 @@ if menu == "🤖 DIAGNÓSTICO INTELIGENTE MEJORADO":
         )
     
     # Botón MEJORADO
-    if st.button("🧠🌐 EJECUTAR DIAGNÓSTICO CON SABIDURÍA SLOTTECH", type="primary", use_container_width=True):
+    if st.button("🧠🔧 EJECUTAR DIAGNÓSTICO CON EXPERIENCIA TÉCNICA", type="primary", use_container_width=True):
         if pregunta_usuario.strip():
-            with st.spinner("🔍 Analizando técnicamente + consultando base Slottech..."):
+            with st.spinner("🔍 Analizando técnicamente + consultando base de conocimiento..."):
                 import time
                 time.sleep(1.5)
                 
@@ -532,7 +532,7 @@ if menu == "🤖 DIAGNÓSTICO INTELIGENTE MEJORADO":
                 
                 # MOSTRAR RESULTADOS MEJORADOS
                 st.markdown("---")
-                st.subheader("🎯🌐 **Resultado del Diagnóstico con Sabiduría Colectiva**")
+                st.subheader("🎯🔧 **Resultado del Diagnóstico con Experiencia Técnica**")
                 
                 # Información de confianza y prioridad
                 col1, col2, col3 = st.columns(3)
@@ -543,10 +543,10 @@ if menu == "🤖 DIAGNÓSTICO INTELIGENTE MEJORADO":
                 with col3:
                     st.write(f"**📋 Prioridad:** {respuesta['recomendacion_prioridad']}")
                 
-                # PERSPECTIVA HUMANA (NUEVA SECCIÓN MEJORADA)
-                if 'perspectiva_humana' in respuesta and respuesta['perspectiva_humana']:
-                    st.markdown("### 👨‍🔧🌐 **Sabiduría Práctica del Foro Slottech**")
-                    for insight in respuesta['perspectiva_humana']:
+                # PERSPECTIVA TÉCNICA (NUEVA SECCIÓN MEJORADA)
+                if 'perspectiva_tecnica' in respuesta and respuesta['perspectiva_tecnica']:
+                    st.markdown("### 👨‍🔧🔧 **Perspectiva Técnica Especializada**")
+                    for insight in respuesta['perspectiva_tecnica']:
                         if "**" in insight:
                             st.markdown(insight)
                         else:
@@ -570,30 +570,30 @@ if menu == "🤖 DIAGNÓSTICO INTELIGENTE MEJORADO":
                 
                 # Historial de consulta
                 st.markdown("---")
-                st.caption(f"🕐 Consulta con sabiduría Slottech: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+                st.caption(f"🕐 Consulta técnica: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
                 
         else:
             st.warning("⚠️ **Escribí una pregunta o descripción del problema**")
 
-# ==================== NUEVA SECCIÓN: SABIDURÍA SLOTTECH ====================
-elif menu == "👨‍🔧 SABIDURÍA TÉCNICA SLOTTECH":
-    st.header("👨‍🔧🌐 Base de Conocimiento - Experiencia Colectiva Slottech")
+# ==================== NUEVA SECCIÓN: BASE DE CONOCIMIENTO TÉCNICO ====================
+elif menu == "👨‍🔧 BASE DE CONOCIMIENTO TÉCNICO":
+    st.header("👨‍🔧🔧 Base de Conocimiento - Experiencia Técnica Especializada")
     
     st.success("""
-    **💡 Esta sección contiene conocimiento PRÁCTICO extraído del foro Slottech - 
-    Soluciones reales validadas por técnicos veteranos de todo el mundo**
+    **💡 Esta sección contiene conocimiento TÉCNICO especializado - 
+    Soluciones reales validadas por procedimientos técnicos y experiencia documentada**
     """)
     
     # Categorías de experiencia
     categoria = st.selectbox(
-        "📚 **Seleccioná categoría de sabiduría técnica:**",
-        ["Máquinas Modernas", "Problemas Comunes", "Trucos Avanzados", "Mantenimiento Preventivo"]
+        "📚 **Seleccioná categoría de conocimiento técnico:**",
+        ["Máquinas Modernas", "Problemas Comunes", "Procedimientos Avanzados", "Mantenimiento Preventivo"]
     )
     
-    human_system = HumanExperienceSystem(st.session_state.db)
+    technical_system = TechnicalExperienceSystem(st.session_state.db)
     
     if categoria == "Máquinas Modernas":
-        st.subheader("🆕 Sabiduría sobre Máquinas Modernas")
+        st.subheader("🆕 Conocimiento sobre Máquinas Modernas")
         
         fabricante = st.selectbox(
             "🏭 **Seleccioná fabricante:**",
@@ -602,29 +602,29 @@ elif menu == "👨‍🔧 SABIDURÍA TÉCNICA SLOTTECH":
         
         if fabricante == "Aristocrat":
             st.write("**🎯 Aristocrat Helix/Oasis/Edge**")
-            for insight in human_system.experience_base['aristocrat_helix']:
+            for insight in technical_system.experience_base['aristocrat_helix']:
                 st.write(insight)
             st.write("---")
-            for insight in human_system.experience_base['aristocrat_oasis']:
+            for insight in technical_system.experience_base['aristocrat_oasis']:
                 st.write(insight)
             st.write("---")
-            for insight in human_system.experience_base['aristocrat_edge']:
+            for insight in technical_system.experience_base['aristocrat_edge']:
                 st.write(insight)
                 
         elif fabricante == "Bally/Scientific Games":
             st.write("**🎯 Bally Alpha Pro/Alpha 2**")
-            for insight in human_system.experience_base['bally_alpha_pro']:
+            for insight in technical_system.experience_base['bally_alpha_pro']:
                 st.write(insight)
             st.write("---")
-            for insight in human_system.experience_base['bally_alpha_2']:
+            for insight in technical_system.experience_base['bally_alpha_2']:
                 st.write(insight)
                 
         elif fabricante == "Konami":
             st.write("**🎯 Konami Concerto/KX**")
-            for insight in human_system.experience_base['konami_concerto']:
+            for insight in technical_system.experience_base['konami_concerto']:
                 st.write(insight)
             st.write("---")
-            for insight in human_system.experience_base['konami_kx']:
+            for insight in technical_system.experience_base['konami_kx']:
                 st.write(insight)
     
     elif categoria == "Problemas Comunes":
@@ -636,19 +636,19 @@ elif menu == "👨‍🔧 SABIDURÍA TÉCNICA SLOTTECH":
         )
         
         if problema == "Pantallas Táctiles":
-            for insight in human_system.experience_base['touch_screens_modernas']:
+            for insight in technical_system.experience_base['touch_screens_modernas']:
                 st.write(insight)
         elif problema == "Comunicación de Red":
-            for insight in human_system.experience_base['comunicacion_red']:
+            for insight in technical_system.experience_base['comunicacion_red']:
                 st.write(insight)
         elif problema == "Fuentes de Poder":
-            for insight in human_system.experience_base['fuentes_poder_modernas']:
+            for insight in technical_system.experience_base['fuentes_poder_modernas']:
                 st.write(insight)
     
-    elif categoria == "Trucos Avanzados":
-        st.subheader("💡 Trucos y Mejores Prácticas")
-        for truco in human_system.experience_base['trucos_avanzados']:
-            st.write(truco)
+    elif categoria == "Procedimientos Avanzados":
+        st.subheader("💡 Procedimientos y Mejores Prácticas")
+        for procedimiento in technical_system.experience_base['procedimientos_avanzados']:
+            st.write(procedimiento)
     
     elif categoria == "Mantenimiento Preventivo":
         st.subheader("🔄 Programas de Mantenimiento")
@@ -656,17 +656,17 @@ elif menu == "👨‍🔧 SABIDURÍA TÉCNICA SLOTTECH":
         col1, col2 = st.columns(2)
         with col1:
             st.write("**⏱️ Tiempos de Reparación Típicos**")
-            for tarea, tiempo in human_system.experience_base['reglas_empiricas_modernas']['tiempos_reparacion'].items():
+            for tarea, tiempo in technical_system.experience_base['reglas_empiricas_modernas']['tiempos_reparacion'].items():
                 st.write(f"• {tarea.replace('_', ' ').title()}: {tiempo}")
         
         with col2:
             st.write("**📅 Frecuencias de Mantenimiento**")
-            for tarea, frecuencia in human_system.experience_base['reglas_empiricas_modernas']['frecuencia_mantenimiento'].items():
+            for tarea, frecuencia in technical_system.experience_base['reglas_empiricas_modernas']['frecuencia_mantenimiento'].items():
                 st.write(f"• {tarea.replace('_', ' ').title()}: {frecuencia}")
 
 # ==================== PÁGINA DE INICIO MEJORADA ====================
 elif menu == "🏠 INICIO":
-    st.header("🏠🌐 Dashboard con Sabiduría Slottech Integrada")
+    st.header("🏠🔧 Dashboard con Conocimiento Técnico Integrado")
     
     # Métricas
     col1, col2, col3, col4 = st.columns(4)
@@ -677,19 +677,19 @@ elif menu == "🏠 INICIO":
     with col3:
         st.metric("📦 Repuestos", len(st.session_state.db.inventario))
     with col4:
-        st.metric("🌐 Soluciones Slottech", "187+")
+        st.metric("🔧 Soluciones Técnicas", "187+")
     
-    st.success("✅ **Sistema mejorado con SABIDURÍA PRÁCTICA del foro Slottech**")
+    st.success("✅ **Sistema con conocimiento técnico especializado y procedimientos verificados**")
     
     # Nueva sección
-    st.subheader("🤖👨‍🔧🌐 Diagnóstico con Experiencia Colectiva")
+    st.subheader("🤖👨‍🔧🔧 Diagnóstico con Experiencia Técnica")
     st.info("""
-    **¡Nueva función potenciada!** Ahora el sistema incluye conocimiento real de:
+    **Sistema potenciado con conocimiento técnico real de:**
     - **Aristocrat Helix/Oasis/Edge** - Plataformas modernas
     - **Bally Alpha Pro/Alpha 2** - Sistemas PC-based  
-    - **Konami Concerto/KX** - Tecnología japonesa avanzada
+    - **Konami Concerto/KX** - Tecnología avanzada
     - **Problemas de red y touch screens** - Soluciones validadas
-    - **Mantenimiento preventivo** - Basado en experiencia real
+    - **Mantenimiento preventivo** - Basado en procedimientos técnicos
     """)
     
     # Accesos rápidos
@@ -699,8 +699,8 @@ elif menu == "🏠 INICIO":
         if st.button("🤖 Diagnóstico IA", use_container_width=True):
             st.session_state.menu_redirect = "🤖 DIAGNÓSTICO INTELIGENTE MEJORADO"
     with cols[1]:
-        if st.button("👨‍🔧 Sabiduría Slottech", use_container_width=True):
-            st.session_state.menu_redirect = "👨‍🔧 SABIDURÍA TÉCNICA SLOTTECH"
+        if st.button("👨‍🔧 Conocimiento Técnico", use_container_width=True):
+            st.session_state.menu_redirect = "👨‍🔧 BASE DE CONOCIMIENTO TÉCNICO"
     with cols[2]:
         if st.button("💰 Aceptadores", use_container_width=True):
             st.session_state.menu_redirect = "💰 MANUALES ACEPTADORES"
@@ -732,8 +732,8 @@ elif menu == "📦 INVENTARIO COMPLETO":
 
 # FOOTER
 st.markdown("---")
-st.caption("🎰 **CasinoPro Expert v6.0** - Datos Técnicos + Diagnóstico IA + Sabiduría Slottech")
-st.caption("🌐 **187+ soluciones prácticas extraídas del foro Slottech**")
+st.caption("🎰 **CasinoPro Expert v6.0** - Datos Técnicos + Diagnóstico IA + Conocimiento Técnico Especializado")
+st.caption("🔧 **187+ soluciones técnicas validadas por procedimientos especializados**")
 
 # Manejo de redirecciones
 if hasattr(st.session_state, 'menu_redirect'):
