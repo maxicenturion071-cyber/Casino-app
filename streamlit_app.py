@@ -3,7 +3,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 
-# CONFIGURACIÓN MÓVIL
+# CONFIGURACIÓN MÓDIL
 st.set_page_config(
     page_title="CasinoPro - Expert System",
     page_icon="🎰",
@@ -383,7 +383,7 @@ class DiagnosticSystemEnhanced:
         else:
             return "🟡 PRIORIDAD MEDIA - Atender durante el día"
 
-# ==================== BASE DE DATOS COMPLETA ====================
+# ==================== BASE DE DATOS COMPLETA Y ACTUALIZADA ====================
 class CasinoProCompleteDB:
     def __init__(self):
         self.aceptadores = {
@@ -418,20 +418,122 @@ class CasinoProCompleteDB:
                     "Bill Jam": "Atasco en camino",
                     "Stacker Full": "Depósito lleno"
                 }
+            },
+            "MEI CashFlow 7000": {
+                "fabricante": "Crane Payment Innovations", 
+                "tipo": "Aceptador Inteligente",
+                "documentacion_verificada": True,
+                "voltaje": "+24V DC ±5%",
+                "comunicacion": "MDB, Ethernet, USB",
+                "caracteristicas_especiales": ["IA integrada", "Diagnóstico remoto"]
             }
         }
+        
+        # BASE DE MÁQUINAS COMPLETA Y ACTUALIZADA
         self.maquinas = {
-            "IGT S2000": {"fabricante": "IGT", "año": 2010},
-            "Aristocrat MK6": {"fabricante": "Aristocrat", "año": 2008}
+            # ========== ARISTOCRAT MODERNA ==========
+            "Aristocrat Helix": {"fabricante": "Aristocrat", "año": 2022, "plataforma": "Helix Core"},
+            "Aristocrat Oasis": {"fabricante": "Aristocrat", "año": 2021, "plataforma": "Oasis"},
+            "Aristocrat Edge X": {"fabricante": "Aristocrat", "año": 2023, "plataforma": "Edge"},
+            "Aristocrat MK6": {"fabricante": "Aristocrat", "año": 2008, "plataforma": "Legacy"},
+            
+            # ========== BALLY/SCIENTIFIC GAMES ==========
+            "Bally Alpha Pro": {"fabricante": "Bally/SG", "año": 2022, "plataforma": "PC Industrial"},
+            "Bally Alpha 2": {"fabricante": "Bally/SG", "año": 2021, "plataforma": "Alpha Series"},
+            "Bally iVIEW DM": {"fabricante": "Bally/SG", "año": 2023, "plataforma": "Display Manager"},
+            
+            # ========== KONAMI ==========
+            "Konami Concerto": {"fabricante": "Konami", "año": 2022, "plataforma": "Concerto"},
+            "Konami KX": {"fabricante": "Konami", "año": 2023, "plataforma": "KX Platform"},
+            "Konami Helix Core": {"fabricante": "Konami", "año": 2022, "plataforma": "Helix"},
+            
+            # ========== IGT ==========
+            "IGT Peak": {"fabricante": "IGT", "año": 2023, "plataforma": "Peak Cabinet"},
+            "IGT S Plus": {"fabricante": "IGT", "año": 2022, "plataforma": "S Series"},
+            "IGT S2000": {"fabricante": "IGT", "año": 2010, "plataforma": "Legacy"},
+            "IGT PeakSlant 49": {"fabricante": "IGT", "año": 2023, "plataforma": "Peak"},
+            
+            # ========== EVERI ==========
+            "Everi CineVision": {"fabricante": "Everi", "año": 2022, "plataforma": "Multimedia"},
+            "Everi Forte": {"fabricante": "Everi", "año": 2023, "plataforma": "Forte"},
+            
+            # ========== NOVOMATIC ==========
+            "Novomatic Axxis": {"fabricante": "Novomatic", "año": 2022, "plataforma": "Axxis"},
+            "Novomatic Cineplex": {"fabricante": "Novomatic", "año": 2023, "plataforma": "Multipantalla"},
+            
+            # ========== LIGHT & WONDER ==========
+            "Light & Wonder Omega": {"fabricante": "L&W", "año": 2023, "plataforma": "Omega"},
+            
+            # ========== MÁQUINAS CLÁSICAS ==========
+            "IGT Game King": {"fabricante": "IGT", "año": 2015, "plataforma": "Video Poker"},
+            "Aristocrat Origen": {"fabricante": "Aristocrat", "año": 2019, "plataforma": "Origen"},
+            "Bally Pro Wave": {"fabricante": "Bally", "año": 2018, "plataforma": "Pro Series"}
         }
+        
+        # INVENTARIO AMPLIADO
         self.inventario = [
-            {"nombre": "🔌 Fuente IGT S2000", "stock": 3, "categoria": "Fuentes"},
-            {"nombre": "💰 Aceptador MEI SCN66", "stock": 5, "categoria": "Aceptadores"}
+            # Fuentes de Poder
+            {"nombre": "🔌 Fuente IGT S2000", "stock": 3, "categoria": "Fuentes", "min_stock": 2},
+            {"nombre": "🔌 Fuente Aristocrat Helix", "stock": 5, "categoria": "Fuentes", "min_stock": 3},
+            {"nombre": "🔌 Fuente Bally Alpha Pro", "stock": 4, "categoria": "Fuentes", "min_stock": 2},
+            {"nombre": "🔌 Fuente Konami Concerto", "stock": 3, "categoria": "Fuentes", "min_stock": 2},
+            
+            # Aceptadores
+            {"nombre": "💰 Aceptador MEI SCN66", "stock": 5, "categoria": "Aceptadores", "min_stock": 3},
+            {"nombre": "💰 Aceptador JCM UBA-10", "stock": 6, "categoria": "Aceptadores", "min_stock": 4},
+            {"nombre": "💰 Aceptador MEI CashFlow", "stock": 4, "categoria": "Aceptadores", "min_stock": 2},
+            
+            # Pantallas
+            {"nombre": "📺 Pantalla Touch 19\" Aristocrat", "stock": 2, "categoria": "Pantallas", "min_stock": 1},
+            {"nombre": "📺 Pantalla 32\" Bally Alpha", "stock": 3, "categoria": "Pantallas", "min_stock": 2},
+            {"nombre": "📺 Pantalla Curva Konami", "stock": 2, "categoria": "Pantallas", "min_stock": 1},
+            
+            # Componentes Electrónicos
+            {"nombre": "💾 MPU IGT S2000", "stock": 2, "categoria": "Electrónicos", "min_stock": 1},
+            {"nombre": "💾 System Board Helix", "stock": 3, "categoria": "Electrónicos", "min_stock": 2},
+            {"nombre": "💾 Placa Video Alpha Pro", "stock": 2, "categoria": "Electrónicos", "min_stock": 1},
+            
+            # Cables y Conectores
+            {"nombre": "🔗 Cable LVDS 40-pin", "stock": 10, "categoria": "Cables", "min_stock": 5},
+            {"nombre": "🔗 Cable MDB 16-pin", "stock": 15, "categoria": "Cables", "min_stock": 8},
+            {"nombre": "🔗 Cable Ethernet Cat6", "stock": 20, "categoria": "Cables", "min_stock": 10},
+            
+            # Herramientas
+            {"nombre": "🛠️ Kit Calibración Touch", "stock": 2, "categoria": "Herramientas", "min_stock": 1},
+            {"nombre": "🛠️ Software Diagnóstico", "stock": 1, "categoria": "Herramientas", "min_stock": 1}
         ]
+        
+        # PROBLEMAS COMUNES AMPLIADOS
         self.problemas_comunes = {
-            "no enciende": {"solucion": "Verificar fuente y fusibles"},
-            "error billetetero": {"solucion": "Limpiar y calibrar aceptador"}
+            # Problemas Eléctricos
+            "no enciende": {"solucion": "Verificar fuente, fusibles y conexiones principales"},
+            "reinicia constantemente": {"solucion": "Verificar voltaje de fuente y condensadores"},
+            "pantalla negra": {"solucion": "Verificar cable LVDS, backlight y fuente de pantalla"},
+            
+            # Problemas de Aceptadores
+            "error billetetero": {"solucion": "Limpiar, calibrar y verificar sensores"},
+            "no acepta billetes": {"solucion": "Verificar calibración y estado de sensores"},
+            "rechaza billetes buenos": {"solucion": "Recalibrar con billetes de referencia"},
+            "stacker full error": {"solucion": "Vaciar depósito y verificar sensor stacker"},
+            
+            # Problemas de Touch
+            "touch no responde": {"solucion": "Recalibrar pantalla y verificar conexiones"},
+            "touch impreciso": {"solucion": "Calibrar y verificar interferencias"},
+            
+            # Problemas de Red
+            "sin conexión network": {"solucion": "Verificar cable Ethernet, switch y configuración IP"},
+            "comunicación SAS falla": {"solucion": "Verificar configuración SAS y conexiones"},
+            
+            # Problemas de Audio/Video
+            "sin audio": {"solucion": "Verificar amplificador, bocinas y configuración"},
+            "artefactos en video": {"solucion": "Verificar cable LVDS y tarjeta de video"},
+            "pantalla con líneas": {"solucion": "Revisar conexiones y reemplazar pantalla si es necesario"},
+            
+            # Problemas de Software
+            "error de software": {"solucion": "Reiniciar máquina, verificar logs y reinstalar si es necesario"},
+            "update fallido": {"solucion": "Restaurar backup y repetir update con conexión estable"}
         }
+        
         self.ruletas = {}
         self.reparaciones = []
 
@@ -722,13 +824,39 @@ elif menu == "💰 MANUALES ACEPTADORES":
 
 elif menu == "🎰 MÁQUINAS REGISTRADAS":
     st.header("🎰 Máquinas en Base de Datos")
+    
+    # Filtros por fabricante
+    fabricantes = list(set([info['fabricante'] for info in st.session_state.db.maquinas.values()]))
+    fabricante_seleccionado = st.selectbox("🔍 Filtrar por fabricante:", ["Todos"] + fabricantes)
+    
+    # Contadores
+    total_maquinas = len(st.session_state.db.maquinas)
+    st.metric("📊 Total de Máquinas Registradas", total_maquinas)
+    
+    # Mostrar máquinas filtradas
     for modelo, info in st.session_state.db.maquinas.items():
-        st.write(f"• **{modelo}** - {info['fabricante']} ({info['año']})")
+        if fabricante_seleccionado == "Todos" or info['fabricante'] == fabricante_seleccionado:
+            with st.expander(f"🎰 {modelo}"):
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.write(f"**Fabricante:** {info['fabricante']}")
+                with col2:
+                    st.write(f"**Año:** {info['año']}")
+                with col3:
+                    st.write(f"**Plataforma:** {info.get('plataforma', 'N/A')}")
 
 elif menu == "📦 INVENTARIO COMPLETO":
     st.header("📦 Inventario")
+    
+    # Filtros por categoría
+    categorias = list(set([item['categoria'] for item in st.session_state.db.inventario]))
+    categoria_seleccionada = st.selectbox("🔍 Filtrar por categoría:", ["Todas"] + categorias)
+    
+    # Mostrar inventario filtrado
     for item in st.session_state.db.inventario:
-        st.write(f"• {item['nombre']} - Stock: {item['stock']}")
+        if categoria_seleccionada == "Todas" or item['categoria'] == categoria_seleccionada:
+            stock_color = "🟢" if item['stock'] > item.get('min_stock', 0) else "🔴"
+            st.write(f"{stock_color} **{item['nombre']}** - Stock: {item['stock']} | Mín: {item.get('min_stock', 'N/A')}")
 
 # FOOTER
 st.markdown("---")
