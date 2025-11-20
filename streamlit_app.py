@@ -1,4 +1,4 @@
-# app.py - CASINOPRO CON IA "CASINOPRO" - Sistema Inteligente Especializado
+# app.py - CASINOPRO CON IA "CASINOPRO" - Sistema de Chat Inteligente
 import streamlit as st
 import pandas as pd
 import json
@@ -18,7 +18,7 @@ st.set_page_config(
 class CasinoProAISystem:
     def __init__(self):
         self.nombre = "CasinoPro"
-        self.version = "2.2"  # Actualizada por integración Vertex
+        self.version = "2.2"
         self.personalidad = self.setup_personalidad()
         self.knowledge_base = self.setup_knowledge_base()
         self.conversation_memory = []
@@ -35,14 +35,14 @@ class CasinoProAISystem:
             'eslogan': 'Tu asistente técnico inteligente para máquinas de casino',
             'estilo_respuesta': 'técnico_amigable',
             'emoji_firma': '🤖🎰',
-            'saludo': '¡Hola! Soy CasinoPro, tu especialista en diagnóstico técnico.',
+            'saludo': '¡Hola! Soy CasinoPro, tu especialista en diagnóstico técnico. ¿En qué puedo ayudarte hoy?',
             'caracteristicas': [
                 "25+ años de experiencia integrada",
                 "Aprendizaje automático continuo", 
                 "Especialista en Aristocrat, Bally, IGT, Konami",
                 "Conocimiento del manual CPU-4.2.2.X",
                 "Diagnóstico basado en patrones reales",
-                "Especialista en Vertex Controller 3.5/4.0"  # Nueva característica
+                "Especialista en Vertex Controller 3.5/4.0"
             ]
         }
     
@@ -200,7 +200,6 @@ class CasinoProAISystem:
                     'usage_count': 0,
                     'success_rate': 0.80
                 },
-                # NUEVOS PROBLEMAS VERTEX CONTROLLER
                 'vertex_no_enciende': {
                     'diagnostico': "Problema de alimentación Vertex Controller",
                     'pasos': [
@@ -765,7 +764,10 @@ if 'diagnostic_system' not in st.session_state:
     st.session_state.diagnostic_system = DiagnosticSystemWithCasinoPro(st.session_state.db)
 
 if 'current_menu' not in st.session_state:
-    st.session_state.current_menu = "🏠 INICIO"
+    st.session_state.current_menu = "💬 CHAT CASINOPRO"
+
+if 'chat_history' not in st.session_state:
+    st.session_state.chat_history = []
 
 if 'last_question' not in st.session_state:
     st.session_state.last_question = ""
@@ -773,7 +775,7 @@ if 'last_question' not in st.session_state:
 if 'show_feedback' not in st.session_state:
     st.session_state.show_feedback = False
 
-# ==================== INTERFAZ PRINCIPAL ====================
+# ==================== INTERFAZ PRINCIPAL CON CHAT ====================
 def main():
     # Header con información de CasinoPro AI
     info_casinopro = st.session_state.diagnostic_system.casinopro_ai.obtener_info_sistema()
@@ -799,20 +801,26 @@ def main():
         for caracteristica in info_casinopro['caracteristicas']:
             st.write(f"• {caracteristica}")
         
-        # NUEVO: Información Vertex Controller en sidebar
+        # Información Vertex Controller en sidebar
         st.markdown("---")
         st.subheader("🎰 Especialidad Vertex")
         st.write("• Vertex Controller 3.5/4.0")
         st.write("• Bancos progresivos")
         st.write("• Configuración Lighting Link")
         st.write("• Redes progresivas")
+        
+        # Botón para limpiar chat
+        st.markdown("---")
+        if st.button("🗑️ Limpiar Chat", use_container_width=True):
+            st.session_state.chat_history = []
+            st.rerun()
     
     st.markdown("---")
     
     # Menú principal
     menu_options = [
-        "🏠 INICIO", 
-        "🤖 DIAGNÓSTICO CASINOPRO",
+        "💬 CHAT CASINOPRO", 
+        "🤖 DIAGNÓSTICO AVANZADO",
         "📊 ESTADÍSTICAS AI",
         "💰 MANUALES",
         "🎰 MÁQUINAS"
@@ -830,19 +838,127 @@ def main():
 
     st.markdown("---")
     
-    # ==================== DIAGNÓSTICO CON CASINOPRO AI ====================
-    if st.session_state.current_menu == "🤖 DIAGNÓSTICO CASINOPRO":
-        st.header("🤖 Diagnóstico con CasinoPro AI")
+    # ==================== INTERFAZ DE CHAT ====================
+    if st.session_state.current_menu == "💬 CHAT CASINOPRO":
+        st.header("💬 Chat con CasinoPro AI")
         
         st.success("""
-        **🎰 CASINOPRO AI - SISTEMA ESPECIALIZADO**
-        - Diagnósticos basados en 25+ años de experiencia
-        - Aprendizaje automático continuo
-        - Conocimiento específico por fabricante
-        - Análisis contextual inteligente
-        - **ESPECIALIDAD VERTEX CONTROLLER 3.5/4.0** ✅
+        **🎰 CHAT INTELIGENTE CON CASINOPRO**
+        - Conversación natural como esta que estamos teniendo
+        - Diagnósticos en tiempo real
+        - Aprendizaje continuo de cada consulta
+        - Especialidad en Vertex Controller
         """)
         
+        # Área del chat
+        chat_container = st.container()
+        
+        with chat_container:
+            # Mostrar historial del chat
+            for message in st.session_state.chat_history:
+                if message['type'] == 'user':
+                    with st.chat_message("user"):
+                        st.write(f"**Tú:** {message['content']}")
+                        st.caption(f"🕐 {message['timestamp']}")
+                else:
+                    with st.chat_message("assistant"):
+                        st.write(f"**CasinoPro:** {message['content']}")
+                        st.caption(f"🕐 {message['timestamp']}")
+            
+            # Mostrar saludo inicial si no hay historial
+            if not st.session_state.chat_history:
+                with st.chat_message("assistant"):
+                    st.write(f"**CasinoPro:** {info_casinopro['saludo']}")
+                    st.caption(f"🕐 {datetime.now().strftime('%H:%M')}")
+        
+        # Input de chat
+        st.markdown("---")
+        col1, col2 = st.columns([4, 1])
+        
+        with col1:
+            user_input = st.chat_input("Escribe tu pregunta o problema técnico aquí...")
+        
+        with col2:
+            if st.button("🔄 Nueva Consulta", use_container_width=True):
+                user_input = "Hola, necesito ayuda con un problema técnico"
+        
+        if user_input:
+            # Agregar mensaje del usuario al historial
+            user_message = {
+                'type': 'user',
+                'content': user_input,
+                'timestamp': datetime.now().strftime('%H:%M')
+            }
+            st.session_state.chat_history.append(user_message)
+            
+            # Obtener respuesta de CasinoPro
+            with st.spinner("🔍 CasinoPro está analizando..."):
+                respuesta = st.session_state.diagnostic_system.obtener_diagnostico_mejorado(
+                    user_input,
+                    "No específico"
+                )
+                
+                # Formatear respuesta para chat
+                respuesta_chat = respuesta['analisis_experto']
+                
+                # Agregar respuesta al historial
+                assistant_message = {
+                    'type': 'assistant',
+                    'content': respuesta_chat,
+                    'timestamp': datetime.now().strftime('%H:%M')
+                }
+                st.session_state.chat_history.append(assistant_message)
+                
+                st.session_state.last_response = respuesta
+                st.session_state.last_question = user_input
+                
+            st.rerun()
+        
+        # Sugerencias rápidas
+        st.markdown("---")
+        st.subheader("💡 ¿No sabés por dónde empezar? Probá con:")
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            if st.button("🎰 Vertex no enciende", use_container_width=True):
+                st.session_state.chat_history.append({
+                    'type': 'user', 
+                    'content': 'Mi Vertex Controller 4.0 no enciende, ¿qué puedo hacer?',
+                    'timestamp': datetime.now().strftime('%H:%M')
+                })
+                st.rerun()
+                
+        with col2:
+            if st.button("🔧 Aceptador rechaza", use_container_width=True):
+                st.session_state.chat_history.append({
+                    'type': 'user',
+                    'content': 'El aceptador MEI SCN66 rechaza todos los billetes',
+                    'timestamp': datetime.now().strftime('%H:%M')
+                })
+                st.rerun()
+                
+        with col3:
+            if st.button("📡 Problema de red", use_container_width=True):
+                st.session_state.chat_history.append({
+                    'type': 'user',
+                    'content': 'Las máquinas no se comunican con el sistema central',
+                    'timestamp': datetime.now().strftime('%H:%M')
+                })
+                st.rerun()
+    
+    # ==================== DIAGNÓSTICO AVANZADO (MANTENIDO) ====================
+    elif st.session_state.current_menu == "🤖 DIAGNÓSTICO AVANZADO":
+        st.header("🤖 Diagnóstico Avanzado con CasinoPro")
+        
+        st.info("""
+        **🔧 MODO DIAGNÓSTICO AVANZADO**
+        - Selección específica de equipos
+        - Configuración detallada
+        - Análisis técnico profundo
+        """)
+        
+        # (Mantener todo el código original del diagnóstico avanzado aquí)
         # Selección de aceptador (ahora opcional)
         col1, col2 = st.columns(2)
         
@@ -868,7 +984,7 @@ def main():
                 st.write(f"**Voltaje**: {info_maquina['voltaje']}")
                 st.write(f"**Comunicación**: {info_maquina['comunicacion']}")
         
-        # NUEVO: Información específica para Vertex Controller
+        # Información específica para Vertex Controller
         if tipo_consulta == "Vertex Controller":
             with st.expander("🎰 INFORMACIÓN VERTEX CONTROLLER", expanded=True):
                 col1, col2 = st.columns(2)
@@ -975,7 +1091,7 @@ def main():
             col1, col2, col3 = st.columns(3)
             
             with col1:
-                if st.button("✅ Sí, muy acertado", use_container_width=True):
+                if st.button("✅ Sí, muy acertado", use_container_width=True, key="fb_yes"):
                     st.session_state.diagnostic_system.casinopro_ai.agregar_feedback(
                         st.session_state.last_question,
                         st.session_state.last_response['analisis_experto'],
@@ -985,7 +1101,7 @@ def main():
                     st.session_state.show_feedback = False
             
             with col2:
-                if st.button("❌ No fue preciso", use_container_width=True):
+                if st.button("❌ No fue preciso", use_container_width=True, key="fb_no"):
                     st.session_state.diagnostic_system.casinopro_ai.agregar_feedback(
                         st.session_state.last_question,
                         st.session_state.last_response['analisis_experto'],
@@ -995,12 +1111,12 @@ def main():
                     st.session_state.show_feedback = False
             
             with col3:
-                if st.button("⭐ Calificar Diagnóstico", use_container_width=True):
+                if st.button("⭐ Calificar Diagnóstico", use_container_width=True, key="fb_rate"):
                     with st.expander("💬 Danos tu opinión detallada", expanded=True):
-                        calificacion = st.slider("Calificación del diagnóstico:", 1, 5, 3)
-                        comentarios = st.text_area("Comentarios para mejorar:", placeholder="¿Qué funcionó bien? ¿Qué podría mejorar CasinoPro?")
+                        calificacion = st.slider("Calificación del diagnóstico:", 1, 5, 3, key="rating_slider")
+                        comentarios = st.text_area("Comentarios para mejorar:", placeholder="¿Qué funcionó bien? ¿Qué podría mejorar CasinoPro?", key="comments_area")
                         
-                        if st.button("🎰 Enviar Calificación"):
+                        if st.button("🎰 Enviar Calificación", key="send_rating"):
                             st.session_state.diagnostic_system.casinopro_ai.agregar_feedback(
                                 st.session_state.last_question,
                                 st.session_state.last_response['analisis_experto'],
@@ -1089,9 +1205,9 @@ def main():
             "Konami Concerto": "Documentación técnica Concerto Platform",
             "MEI SCN66": "Manual de instalación y configuración",
             "JCM UBA-10": "Guía de mantenimiento preventivo",
-            "Vertex Controller 3.5": "Manual completo armado y configuración",  # NUEVO
-            "Vertex Controller 4.0": "Instructivo progresivos Lighting Link",   # NUEVO
-            "Vertex Red Progresiva": "Estructura de red y componentes"         # NUEVO
+            "Vertex Controller 3.5": "Manual completo armado y configuración",
+            "Vertex Controller 4.0": "Instructivo progresivos Lighting Link",
+            "Vertex Red Progresiva": "Estructura de red y componentes"
         }
         
         col1, col2 = st.columns(2)
@@ -1137,7 +1253,7 @@ def main():
                     else:
                         st.write(f"**🎰 {maquina}** - Año: {detalles['año']} - ✅ Compatible con CasinoPro")
         
-        # NUEVO: Mostrar componentes Vertex
+        # Mostrar componentes Vertex
         st.markdown("---")
         st.subheader("🔧 Componentes Vertex Controller")
         
@@ -1147,99 +1263,6 @@ def main():
                 st.write(f"**Conexión**: {info['conexion']}")
                 if 'puertos' in info:
                     st.write(f"**Puertos**: {info['puertos']}")
-    
-    # ==================== INICIO ====================
-    else:  # Página de INICIO
-        st.header("🏠 Bienvenido a CasinoPro AI")
-        
-        st.success("""
-        **🎰 SISTEMA INTELIGENTE ESPECIALIZADO EN MÁQUINAS DE CASINO**
-        
-        CasinoPro es tu asistente técnico avanzado con:
-        - 🤖 **IA especializada** en diagnóstico de máquinas tragamonedas
-        - 📚 **25+ años de experiencia** integrada en el sistema
-        - 🔄 **Aprendizaje automático continuo** que mejora con cada consulta
-        - 🎯 **Conocimiento específico** por fabricante y modelo
-        - ⭐ **Sistema de feedback** que aprende de tu experiencia
-        - 🎰 **ESPECIALIDAD VERTEX CONTROLLER 3.5/4.0** ✅
-        """)
-        
-        # Características principales
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            st.markdown("### 🚀 Rápido")
-            st.write("Diagnósticos en segundos con análisis inteligente")
-            
-        with col2:
-            st.markdown("### 🎯 Preciso")
-            st.write("Basado en miles de casos reales documentados")
-            
-        with col3:
-            st.markdown("### 🔄 Adaptativo")
-            st.write("Mejora continuamente con cada consulta")
-        
-        st.markdown("---")
-        
-        # Estadísticas de la base de datos
-        st.subheader("📈 Base de Conocimiento CasinoPro")
-        col1, col2, col3, col4 = st.columns(4)
-        
-        with col1:
-            st.metric("🏭 Fabricantes", "6+")
-        with col2:
-            st.metric("🎰 Máquinas", f"{len(st.session_state.db.maquinas)}+")
-        with col3:
-            st.metric("🔧 Aceptadores", f"{len(st.session_state.db.aceptadores)}+")
-        with col4:
-            st.metric("📚 Problemas", f"{len(st.session_state.diagnostic_system.casinopro_ai.knowledge_base['problemas_comunes'])}+")
-        
-        # NUEVO: Especialidad Vertex
-        st.markdown("---")
-        st.subheader("🎰 Especialidad Vertex Controller")
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown("**Vertex 3.5**")
-            st.write("• Ensamblaje disco SATA + Plugin CF")
-            st.write("• Configuración IP: 192.168.50.2")
-            st.write("• Credenciales: admin/Password1")
-            
-        with col2:
-            st.markdown("**Vertex 4.0**")
-            st.write("• Ensamblaje plugin CFAST1")
-            st.write("• Fuente de poder externa")
-            st.write("• Credenciales: Retail1/Retail1")
-        
-        st.markdown("---")
-        
-        # Llamada a la acción
-        st.markdown("### 🎰 ¿Listo para comenzar?")
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            if st.button("🤖 IR A DIAGNÓSTICO CASINOPRO", type="primary", use_container_width=True):
-                st.session_state.current_menu = "🤖 DIAGNÓSTICO CASINOPRO"
-                st.rerun()
-        
-        with col2:
-            if st.button("📊 VER ESTADÍSTICAS AI", use_container_width=True):
-                st.session_state.current_menu = "📊 ESTADÍSTICAS AI"
-                st.rerun()
-        
-        # Footer
-        st.markdown("---")
-        st.markdown(
-            f"""
-            <div style='text-align: center; color: gray;'>
-            <p>🎰 <b>CasinoPro AI v{info_casinopro['version']}</b> - Sistema Inteligente Especializado</p>
-            <p>{info_casinopro['emoji_firma']} - Tu partner técnico inteligente</p>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
 
 if __name__ == "__main__":
     main()
