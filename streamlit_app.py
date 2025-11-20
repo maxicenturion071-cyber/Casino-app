@@ -5,7 +5,6 @@ import json
 import os
 from datetime import datetime
 import hashlib
-import random
 
 # CONFIGURACIÓN MÓVIL
 st.set_page_config(
@@ -157,20 +156,6 @@ class CasinoProAISystem:
                     'confidence': 0.92,
                     'usage_count': 0,
                     'success_rate': 0.82
-                },
-                'error_sistema': {
-                    'diagnostico': "Error de software o configuración del sistema",
-                    'pasos': [
-                        "1. 💻 Revisar códigos de error en display",
-                        "2. 🔄 Realizar reset de fábrica controlado",
-                        "3. 📀 Verificar integridad del software",
-                        "4. ⚙️ Restaurar configuración de respaldo",
-                        "5. 🔧 Actualizar firmware a última versión"
-                    ],
-                    'prioridad': "🔴 ALTA",
-                    'confidence': 0.85,
-                    'usage_count': 0,
-                    'success_rate': 0.70
                 }
             },
             'fabricantes_especificos': {
@@ -490,81 +475,28 @@ class CasinoProCompleteDB:
                 "fabricante": "Crane Payment Innovations",
                 "tipo": "Validador de Billetes",
                 "voltaje": "+24V DC ±10%",
-                "comunicacion": "MDB, ICP, RS-232, USB",
-                "problemas_comunes": ["rechaza_billetes", "comunicacion_falla"]
+                "comunicacion": "MDB, ICP, RS-232, USB"
             },
             "JCM UBA-10": {
                 "fabricante": "JCM Global",
                 "tipo": "Aceptador Universal", 
                 "voltaje": "+24V DC ±15%",
-                "comunicacion": "MDB, ICP, RS-232",
-                "problemas_comunes": ["no_enciende", "rechaza_billetes"]
+                "comunicacion": "MDB, ICP, RS-232"
             },
             "MEI CashFlow 7000": {
                 "fabricante": "Crane Payment Innovations",
                 "tipo": "Aceptador Inteligente",
                 "voltaje": "+24V DC ±5%",
-                "comunicacion": "MDB, Ethernet, USB",
-                "problemas_comunes": ["comunicacion_falla", "sobrecalentamiento"]
-            },
-            "Aristocrat NV9": {
-                "fabricante": "Aristocrat",
-                "tipo": "Validación Avanzada",
-                "voltaje": "+24V DC ±8%",
-                "comunicacion": "MDB, SAS, RS-232",
-                "problemas_comunes": ["touch_no_responde", "error_sistema"]
+                "comunicacion": "MDB, Ethernet, USB"
             }
         }
         
         self.maquinas = {
-            "Aristocrat Helix": {
-                "fabricante": "Aristocrat", 
-                "año": 2022,
-                "aceptadores_compatibles": ["MEI SCN66", "Aristocrat NV9"],
-                "caracteristicas": ["Pantalla curva 4K", "Sistema Helix Core", "Audio surround"]
-            },
-            "Aristocrat Oasis": {
-                "fabricante": "Aristocrat", 
-                "año": 2021,
-                "aceptadores_compatibles": ["MEI CashFlow 7000", "JCM UBA-10"],
-                "caracteristicas": ["Doble display", "Sistema refrigeración avanzada", "Conectividad IoT"]
-            },
-            "Bally Alpha Pro": {
-                "fabricante": "Bally/SG", 
-                "año": 2022,
-                "aceptadores_compatibles": ["MEI SCN66", "MEI CashFlow 7000"],
-                "caracteristicas": ["Procesador Alpha 2", "Diagnóstico integrado", "Panel táctil 32\""]
-            },
-            "Konami Concerto": {
-                "fabricante": "Konami", 
-                "año": 2022,
-                "aceptadores_compatibles": ["JCM UBA-10", "Aristocrat NV9"],
-                "caracteristicas": ["Pantalla Concerto Curve", "Sistema KX", "Audio 7.1"]
-            },
-            "IGT Peak": {
-                "fabricante": "IGT", 
-                "año": 2023,
-                "aceptadores_compatibles": ["MEI CashFlow 7000", "MEI SCN66"],
-                "caracteristicas": ["Plataforma PeakBar", "4K Ultra HD", "Conexión multi-aceptador"]
-            }
-        }
-        
-        self.manuales = {
-            "MEI SCN66": {
-                "instalacion": "Manual_MEI_SCN66_Instalacion_v3.2.pdf",
-                "servicio": "Manual_MEI_SCN66_Servicio_Tecnico_v2.8.pdf",
-                "calibracion": "Guia_Calibracion_MEI_SCN66_v1.5.pdf"
-            },
-            "Aristocrat Helix": {
-                "operacion": "Manual_Aristocrat_Helix_Operador_v4.1.pdf",
-                "servicio": "Manual_Aristocrat_Helix_Servicio_v3.9.pdf",
-                "diagnostico": "Guia_Diagnostico_Helix_Avanzado_v2.3.pdf"
-            },
-            "Bally Alpha Pro": {
-                "instalacion": "Manual_Bally_Alpha_Pro_Instalacion_v2.7.pdf",
-                "programacion": "Guia_Programacion_Alpha_Pro_v1.9.pdf",
-                "error_codes": "Codigos_Error_Bally_Alpha_Pro_Completo_v3.1.pdf"
-            }
+            "Aristocrat Helix": {"fabricante": "Aristocrat", "año": 2022},
+            "Aristocrat Oasis": {"fabricante": "Aristocrat", "año": 2021},
+            "Bally Alpha Pro": {"fabricante": "Bally/SG", "año": 2022},
+            "Konami Concerto": {"fabricante": "Konami", "año": 2022},
+            "IGT Peak": {"fabricante": "IGT", "año": 2023}
         }
 
 # ==================== INICIALIZACIÓN ====================
@@ -582,9 +514,6 @@ if 'last_question' not in st.session_state:
     
 if 'show_feedback' not in st.session_state:
     st.session_state.show_feedback = False
-
-if 'casos_resueltos' not in st.session_state:
-    st.session_state.casos_resueltos = 0
 
 # ==================== INTERFAZ PRINCIPAL ====================
 def main():
@@ -611,15 +540,6 @@ def main():
         st.subheader("🚀 Características")
         for caracteristica in info_casinopro['caracteristicas']:
             st.write(f"• {caracteristica}")
-            
-        st.markdown("---")
-        st.subheader("📈 Casos Resueltos")
-        st.metric("✅ Éxitos Confirmados", st.session_state.casos_resueltos)
-        
-        # Botón de reset (solo para desarrollo)
-        if st.button("🔄 Reiniciar Sistema", type="secondary"):
-            st.session_state.clear()
-            st.rerun()
     
     st.markdown("---")
     
@@ -629,8 +549,7 @@ def main():
         "🤖 DIAGNÓSTICO CASINOPRO",
         "📊 ESTADÍSTICAS AI",
         "💰 MANUALES",
-        "🎰 MÁQUINAS",
-        "⚙️ CONFIGURACIÓN"
+        "🎰 MÁQUINAS"
     ]
 
     selected_menu = st.selectbox(
@@ -657,39 +576,20 @@ def main():
         - Análisis contextual inteligente
         """)
         
-        # Selección de máquina y aceptador
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            maquina_seleccionada = st.selectbox(
-                "🎰 **SELECCIONÁ LA MÁQUINA:**",
-                list(st.session_state.db.maquinas.keys())
-            )
-        
-        with col2:
-            aceptador_seleccionado = st.selectbox(
-                "🔧 **SELECCIONÁ EL ACEPTADOR:**",
-                list(st.session_state.db.aceptadores.keys())
-            )
+        # Selección de aceptador
+        aceptador_seleccionado = st.selectbox(
+            "🔧 **SELECCIONÁ EL ACEPTADOR:**",
+            list(st.session_state.db.aceptadores.keys())
+        )
         
         # Información de la máquina seleccionada
-        if maquina_seleccionada:
-            info_maquina = st.session_state.db.maquinas[maquina_seleccionada]
+        if aceptador_seleccionado:
+            info_maquina = st.session_state.db.aceptadores[aceptador_seleccionado]
             with st.expander("📋 Información de la máquina seleccionada"):
                 st.write(f"**Fabricante**: {info_maquina['fabricante']}")
-                st.write(f"**Año**: {info_maquina['año']}")
-                st.write(f"**Características**: {', '.join(info_maquina['caracteristicas'])}")
-                st.write(f"**Aceptadores compatibles**: {', '.join(info_maquina['aceptadores_compatibles'])}")
-        
-        # Información del aceptador seleccionado
-        if aceptador_seleccionado:
-            info_aceptador = st.session_state.db.aceptadores[aceptador_seleccionado]
-            with st.expander("🔧 Información del aceptador seleccionado"):
-                st.write(f"**Fabricante**: {info_aceptador['fabricante']}")
-                st.write(f"**Tipo**: {info_aceptador['tipo']}")
-                st.write(f"**Voltaje**: {info_aceptador['voltaje']}")
-                st.write(f"**Comunicación**: {info_aceptador['comunicacion']}")
-                st.write(f"**Problemas comunes**: {', '.join(info_aceptador.get('problemas_comunes', []))}")
+                st.write(f"**Tipo**: {info_maquina['tipo']}")
+                st.write(f"**Voltaje**: {info_maquina['voltaje']}")
+                st.write(f"**Comunicación**: {info_maquina['comunicacion']}")
         
         # Área de diagnóstico
         st.markdown("---")
@@ -708,47 +608,20 @@ def main():
             height=80
         )
         
-        # Síntomas rápidos
-        st.markdown("**🔍 SELECCIONÁ SÍNTOMAS RÁPIDOS:**")
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            sintoma_1 = st.checkbox("No enciende")
-            sintoma_2 = st.checkbox("Pantalla negra")
-        with col2:
-            sintoma_3 = st.checkbox("Rechaza billetes")
-            sintoma_4 = st.checkbox("Error en pantalla")
-        with col3:
-            sintoma_5 = st.checkbox("Sobrecalienta")
-            sintoma_6 = st.checkbox("Touch no responde")
-        
         col1, col2 = st.columns([3, 1])
         
         with col1:
             if st.button("🎰🔧 EJECUTAR DIAGNÓSTICO CASINOPRO", type="primary", use_container_width=True):
-                if pregunta_usuario.strip() or any([sintoma_1, sintoma_2, sintoma_3, sintoma_4, sintoma_5, sintoma_6]):
+                if pregunta_usuario.strip():
                     st.session_state.last_question = pregunta_usuario
                     st.session_state.show_feedback = False
                     
                     with st.spinner("🔍 CasinoPro AI analizando + aprendiendo..."):
                         import time
-                        time.sleep(2)
-                        
-                        # Construir pregunta completa con síntomas
-                        pregunta_completa = pregunta_usuario
-                        sintomas_seleccionados = []
-                        if sintoma_1: sintomas_seleccionados.append("no enciende")
-                        if sintoma_2: sintomas_seleccionados.append("pantalla negra")
-                        if sintoma_3: sintomas_seleccionados.append("rechaza billetes")
-                        if sintoma_4: sintomas_seleccionados.append("error en pantalla")
-                        if sintoma_5: sintomas_seleccionados.append("sobrecalienta")
-                        if sintoma_6: sintomas_seleccionados.append("touch no responde")
-                        
-                        if sintomas_seleccionados:
-                            pregunta_completa += f". Síntomas: {', '.join(sintomas_seleccionados)}"
+                        time.sleep(1)
                         
                         respuesta = st.session_state.diagnostic_system.obtener_diagnostico_mejorado(
-                            pregunta_completa,
+                            pregunta_usuario,
                             aceptador_seleccionado, 
                             contexto_adicional
                         )
@@ -763,8 +636,8 @@ def main():
                         # Información básica
                         col1, col2 = st.columns(2)
                         with col1:
-                            st.write(f"**🤖 Máquina:** {maquina_seleccionada}")
-                            st.write(f"**🔧 Aceptador:** {respuesta['aceptador']}")
+                            st.write(f"**🤖 Aceptador:** {respuesta['aceptador']}")
+                            st.write(f"**🏭 Fabricante:** {respuesta['datos_maquina'].get('fabricante', 'N/A')}")
                         with col2:
                             st.write(f"**🎯 Confianza:** {respuesta['nivel_confianza']}")
                             st.write(f"**📋 Prioridad:** {respuesta['prioridad_recomendada']}")
@@ -778,7 +651,7 @@ def main():
                         st.caption(f"🕐 Diagnóstico generado: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
                         
                 else:
-                    st.warning("⚠️ Por favor, describí el problema técnico o seleccioná síntomas")
+                    st.warning("⚠️ Por favor, describí el problema técnico")
         
         with col2:
             if st.session_state.show_feedback:
@@ -806,10 +679,8 @@ def main():
                         st.session_state.last_response['analisis_experto'],
                         fue_efectiva=True
                     )
-                    st.session_state.casos_resueltos += 1
                     st.success("🎉 ¡Gracias! CasinoPro aprendió de tu experiencia")
                     st.session_state.show_feedback = False
-                    st.rerun()
             
             with col2:
                 if st.button("❌ No fue preciso", use_container_width=True):
@@ -820,7 +691,6 @@ def main():
                     )
                     st.error("📝 CasinoPro ajustará sus diagnósticos. Contanos más...")
                     st.session_state.show_feedback = False
-                    st.rerun()
             
             with col3:
                 if st.button("⭐ Calificar Diagnóstico", use_container_width=True):
@@ -835,11 +705,8 @@ def main():
                                 rating=calificacion,
                                 comentarios=comentarios
                             )
-                            if calificacion >= 4:
-                                st.session_state.casos_resueltos += 1
                             st.success(f"⭐ ¡Gracias por tu calificación de {calificacion}/5! CasinoPro mejorará")
                             st.session_state.show_feedback = False
-                            st.rerun()
     
     # ==================== ESTADÍSTICAS DE CASINOPRO AI ====================
     elif st.session_state.current_menu == "📊 ESTADÍSTICAS AI":
@@ -875,7 +742,6 @@ def main():
             st.write(f"• **Último aprendizaje**: {stats['ultimo_aprendizaje']}")
             st.write(f"• **Tasa de aprendizaje activo**: {stats['confianza_promedio']*100:.1f}%")
             st.write(f"• **Efectividad general**: {(stats['confianza_promedio']*100 - 10):.1f}%")
-            st.write(f"• **Casos resueltos**: {st.session_state.casos_resueltos}")
             
         with col2:
             st.markdown("**🎯 Capacidades del Sistema**")
@@ -900,18 +766,6 @@ def main():
                     st.write(f"**Primera detección**: {patron_data['first_seen'][:10]}")
         else:
             st.info("🤖 CasinoPro aún está aprendiendo. Realizá consultas para generar patrones.")
-            
-        # Gráfico de efectividad (simulado)
-        st.markdown("---")
-        st.subheader("📈 Efectividad por Tipo de Problema")
-        
-        problemas_data = {
-            'Tipo de Problema': ['No Enciende', 'Comunicación', 'Touch', 'Billetes', 'Calor', 'Sistema'],
-            'Efectividad (%)': [85, 80, 75, 78, 82, 70]
-        }
-        
-        df_problemas = pd.DataFrame(problemas_data)
-        st.bar_chart(df_problemas.set_index('Tipo de Problema'))
     
     # ==================== MANUALES ====================
     elif st.session_state.current_menu == "💰 MANUALES":
@@ -925,21 +779,14 @@ def main():
         - Códigos de error
         """)
         
-        # Selección de categoría
-        categoria = st.selectbox(
-            "📂 **SELECCIONÁ CATEGORÍA:**",
-            ["Aceptadores", "Máquinas", "Herramientas", "Protocolos"]
-        )
-        
-        if categoria == "Aceptadores":
-            manuales = st.session_state.db.manuales
-        else:
-            manuales = {
-                "Aristocrat Helix": "Manual completo de servicio técnico",
-                "Bally Alpha Pro": "Guía de diagnóstico avanzado", 
-                "Protocolo MDB": "Especificación técnica completa",
-                "Herramientas Diagnóstico": "Kit de herramientas digitales"
-            }
+        manuales = {
+            "Aristocrat Helix": "Manual de servicio técnico completo - v4.2.1",
+            "Bally Alpha Pro": "Guía de diagnóstico y reparación - Edición 2023",
+            "IGT Peak": "Manual del operador y técnico - Sistema PEAK",
+            "Konami Concerto": "Documentación técnica Concerto Platform",
+            "MEI SCN66": "Manual de instalación y configuración",
+            "JCM UBA-10": "Guía de mantenimiento preventivo"
+        }
         
         col1, col2 = st.columns(2)
         
@@ -947,31 +794,10 @@ def main():
             with col1 if i % 2 == 0 else col2:
                 with st.container():
                     st.markdown(f"**{manual}**")
-                    if isinstance(descripcion, dict):
-                        for tipo, archivo in descripcion.items():
-                            st.write(f"• {tipo.title()}: {archivo}")
-                    else:
-                        st.write(descripcion)
-                    
+                    st.write(descripcion)
                     if st.button(f"📥 Descargar {manual}", key=f"manual_{i}"):
                         st.success(f"📚 Descargando manual de {manual}...")
-                        st.info("💾 El manual se está descargando a tu dispositivo")
         
-        # Búsqueda de manuales
-        st.markdown("---")
-        st.subheader("🔍 Búsqueda de Manuales")
-        
-        busqueda = st.text_input("Buscar manual por nombre o palabra clave:")
-        if busqueda:
-            st.info(f"🔍 Buscando manuales relacionados con: '{busqueda}'")
-            resultados = [manual for manual in manuales.keys() if busqueda.lower() in manual.lower()]
-            if resultados:
-                st.success(f"✅ Se encontraron {len(resultados)} manuales:")
-                for resultado in resultados:
-                    st.write(f"• {resultado}")
-            else:
-                st.warning("❌ No se encontraron manuales con esa palabra clave")
-    
     # ==================== MÁQUINAS ====================
     elif st.session_state.current_menu == "🎰 MÁQUINAS":
         st.header("🎰 Catálogo de Máquinas")
@@ -981,130 +807,19 @@ def main():
         - Especificaciones técnicas completas
         - Configuraciones recomendadas
         - Problemas comunes documentados
-        - Compatibilidad de aceptadores
         """)
         
-        # Filtros
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            fabricante_filtro = st.selectbox(
-                "🏭 Filtrar por Fabricante:",
-                ["Todos"] + list(set([m['fabricante'] for m in st.session_state.db.maquinas.values()]))
-            )
-        
-        with col2:
-            año_filtro = st.selectbox(
-                "📅 Filtrar por Año:",
-                ["Todos"] + sorted(list(set([m['año'] for m in st.session_state.db.maquinas.values()])), reverse=True)
-            )
-        
-        # Mostrar máquinas filtradas
-        maquinas_filtradas = []
+        # Mostrar máquinas disponibles
         for maquina, detalles in st.session_state.db.maquinas.items():
-            if fabricante_filtro == "Todos" or detalles['fabricante'] == fabricante_filtro:
-                if año_filtro == "Todos" or detalles['año'] == año_filtro:
-                    maquinas_filtradas.append((maquina, detalles))
-        
-        st.subheader(f"📊 Mostrando {len(maquinas_filtradas)} máquinas")
-        
-        for maquina, detalles in maquinas_filtradas:
-            with st.expander(f"🎰 {maquina} - {detalles['fabricante']} ({detalles['año']})"):
-                col1, col2 = st.columns(2)
+            with st.expander(f"🎰 {maquina}"):
+                st.write(f"**Fabricante**: {detalles['fabricante']}")
+                st.write(f"**Año**: {detalles['año']}")
+                st.write(f"**Estado**: ✅ Compatible con CasinoPro")
                 
-                with col1:
-                    st.write(f"**Fabricante**: {detalles['fabricante']}")
-                    st.write(f"**Año**: {detalles['año']}")
-                    st.write(f"**Estado**: ✅ Compatible con CasinoPro")
-                    
-                with col2:
-                    st.write(f"**Aceptadores Compatibles**:")
-                    for aceptador in detalles['aceptadores_compatibles']:
-                        st.write(f"  • {aceptador}")
-                
-                st.write(f"**🔧 Características Técnicas**:")
-                for caracteristica in detalles['caracteristicas']:
-                    st.write(f"  • {caracteristica}")
-                
-                # Problemas comunes para este fabricante
-                fabricante = detalles['fabricante'].lower()
-                if fabricante in st.session_state.diagnostic_system.casinopro_ai.knowledge_base['fabricantes_especificos']:
-                    st.write(f"**⚠️ Problemas Comunes {detalles['fabricante']}**:")
-                    problemas_fabricante = st.session_state.diagnostic_system.casinopro_ai.knowledge_base['fabricantes_especificos'][fabricante]
-                    for modelo, consejo in problemas_fabricante.items():
-                        if modelo in maquina.lower():
-                            st.write(f"  • **{modelo.replace('_', ' ').title()}**: {consejo}")
-    
-    # ==================== CONFIGURACIÓN ====================
-    elif st.session_state.current_menu == "⚙️ CONFIGURACIÓN":
-        st.header("⚙️ Configuración del Sistema")
-        
-        st.warning("""
-        **🔧 CONFIGURACIÓN AVANZADA**
-        - Ajustes del sistema CasinoPro
-        - Preferencias de diagnóstico
-        - Configuración de aprendizaje
-        """)
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.subheader("🎯 Preferencias de Diagnóstico")
-            
-            nivel_detalle = st.select_slider(
-                "Nivel de detalle en diagnósticos:",
-                options=["Básico", "Estándar", "Detallado", "Avanzado"],
-                value="Estándar"
-            )
-            
-            incluir_manuales = st.checkbox("Incluir referencias a manuales", value=True)
-            notificaciones_aprendizaje = st.checkbox("Notificaciones de aprendizaje", value=True)
-            
-        with col2:
-            st.subheader("🔧 Configuración AI")
-            
-            tasa_aprendizaje = st.slider("Tasa de aprendizaje:", 0.1, 1.0, 0.7)
-            max_patrones = st.number_input("Máximo de patrones guardados:", 100, 10000, 1000)
-            auto_actualizacion = st.checkbox("Actualización automática de conocimiento", value=True)
-        
-        st.markdown("---")
-        st.subheader("💾 Gestión de Datos")
-        
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            if st.button("📊 Exportar Datos", use_container_width=True):
-                st.success("✅ Datos exportados correctamente")
-                st.info("📁 Archivo: casino_pro_data_export.json")
-                
-        with col2:
-            if st.button("🔄 Recalibrar AI", use_container_width=True):
-                st.success("🎯 AI recalibrada exitosamente")
-                st.info("🤖 Sistema optimizado para diagnósticos")
-                
-        with col3:
-            if st.button("🗑️ Limpiar Cache", use_container_width=True):
-                st.session_state.diagnostic_system.casinopro_ai.learned_patterns = {}
-                st.session_state.diagnostic_system.casinopro_ai.conversation_memory = []
-                st.success("🧹 Cache limpiado correctamente")
-        
-        st.markdown("---")
-        st.subheader("📋 Información del Sistema")
-        
-        info_sistema = st.session_state.diagnostic_system.casinopro_ai.obtener_info_sistema()
-        stats = st.session_state.diagnostic_system.casinopro_ai.obtener_estadisticas()
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.write(f"**Nombre**: {info_sistema['nombre']}")
-            st.write(f"**Versión**: {stats['version']}")
-            st.write(f"**Eslogan**: {info_sistema['eslogan']}")
-            
-        with col2:
-            st.write(f"**Patrones activos**: {stats['total_patrones']}")
-            st.write(f"**Consultas totales**: {stats['total_conversaciones']}")
-            st.write(f"**Confianza sistema**: {stats['confianza_promedio']*100:.1f}%")
+                # Mostrar aceptadores compatibles
+                st.write("**🔄 Aceptadores Compatibles**:")
+                for aceptador in st.session_state.db.aceptadores.keys():
+                    st.write(f"  • {aceptador}")
     
     # ==================== INICIO ====================
     else:  # Página de INICIO
@@ -1127,75 +842,31 @@ def main():
         with col1:
             st.markdown("### 🚀 Rápido")
             st.write("Diagnósticos en segundos con análisis inteligente")
-            st.write("• Respuestas inmediatas")
-            st.write("• Procesamiento en tiempo real")
-            st.write("• Interfaz optimizada")
             
         with col2:
             st.markdown("### 🎯 Preciso")
             st.write("Basado en miles de casos reales documentados")
-            st.write("• 95% de efectividad comprobada")
-            st.write("• Conocimiento de fabricantes")
-            st.write("• Análisis contextual")
             
         with col3:
             st.markdown("### 🔄 Adaptativo")
             st.write("Mejora continuamente con cada consulta")
-            st.write("• Aprendizaje automático")
-            st.write("• Patrones inteligentes")
-            st.write("• Actualización constante")
-        
-        st.markdown("---")
-        
-        # Estadísticas rápidas
-        st.subheader("📈 Impacto del Sistema")
-        
-        col1, col2, col3, col4 = st.columns(4)
-        
-        with col1:
-            st.metric("👥 Técnicos Beneficiados", "150+")
-        with col2:
-            st.metric("⏱️ Tiempo Ahorrado", "75%")
-        with col3:
-            st.metric("✅ Diagnósticos Acertados", "95%")
-        with col4:
-            st.metric("🏭 Fabricantes Cubiertos", "12+")
         
         st.markdown("---")
         
         # Llamada a la acción
         st.markdown("### 🎰 ¿Listo para comenzar?")
         
-        col1, col2, col3 = st.columns(3)
+        col1, col2 = st.columns(2)
         
         with col1:
-            if st.button("🤖 IR A DIAGNÓSTICO", type="primary", use_container_width=True):
+            if st.button("🤖 IR A DIAGNÓSTICO CASINOPRO", type="primary", use_container_width=True):
                 st.session_state.current_menu = "🤖 DIAGNÓSTICO CASINOPRO"
                 st.rerun()
         
         with col2:
-            if st.button("📚 VER MANUALES", use_container_width=True):
-                st.session_state.current_menu = "💰 MANUALES"
-                st.rerun()
-                
-        with col3:
-            if st.button("📊 ESTADÍSTICAS", use_container_width=True):
+            if st.button("📊 VER ESTADÍSTICAS AI", use_container_width=True):
                 st.session_state.current_menu = "📊 ESTADÍSTICAS AI"
                 st.rerun()
-        
-        # Testimonios (simulados)
-        st.markdown("---")
-        st.subheader("💬 Lo que dicen nuestros técnicos")
-        
-        testimonios = [
-            {"nombre": "Carlos R.", "puesto": "Técnico Senior", "texto": "CasinoPro redujo mis tiempos de diagnóstico en un 80%. ¡Increíble!"},
-            {"nombre": "María L.", "puesto": "Supervisora Técnica", "texto": "La precisión de los diagnósticos ha mejorado nuestra eficiencia operativa."},
-            {"nombre": "Juan P.", "puesto": "Especialista IGT", "texto": "El conocimiento específico por fabricante es invaluable para nuestro trabajo diario."}
-        ]
-        
-        for testimonio in testimonios:
-            with st.container():
-                st.info(f"**{testimonio['nombre']}** - *{testimonio['puesto']}*\n\n{testimonio['texto']}")
         
         # Footer
         st.markdown("---")
