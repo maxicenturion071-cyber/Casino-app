@@ -516,6 +516,26 @@ class CasinoProAISystem:
         """Detectar tipo de problema basado en palabras clave - MEJORADA GENERAL"""
         pregunta_lower = pregunta.lower()
         
+        # DETECCIÓN DE SALUDOS Y PREGUNTAS GENERALES - NUEVO
+        saludos = [
+            'hola', 'hola!', 'hola!', 'holaa', 'holaaa',
+            'buenos días', 'buenas tardes', 'buenas noches', 
+            'hey', 'hi', 'hello', 'saludos', 'qué onda',
+            'buen día', 'good morning', 'good afternoon'
+        ]
+        
+        preguntas_generales = [
+            'cómo estás', 'qué tal', 'cómo te va', 'quién eres',
+            'qué puedes hacer', 'ayuda', 'help', 'qué sos',
+            'para qué servís', 'cuál es tu función', 'qué sabés hacer',
+            'qué podés hacer', 'en qué me podés ayudar'
+        ]
+        
+        if any(saludo in pregunta_lower for saludo in saludos):
+            return 'saludo'
+        elif any(pregunta in pregunta_lower for pregunta in preguntas_generales):
+            return 'pregunta_general'
+        
         # DETECCIÓN MEJORADA PARA PROCEDIMIENTOS ESPECÍFICOS
         procedimientos_especificos = {
             # PROCEDIMIENTOS VERTEX
@@ -623,6 +643,66 @@ class CasinoProAISystem:
     
     def _generar_respuesta_casinopro(self, tipo_problema, datos_maquina, pregunta, contexto):
         """Generar respuesta con el estilo y conocimiento de CasinoPro - MEJORADA"""
+        
+        # MANEJAR SALUDOS Y PREGUNTAS GENERALES - NUEVO
+        if tipo_problema == 'saludo':
+            return f"""
+            🎰 **{self.personalidad['nombre']}** - **ASISTENTE TÉCNICO ESPECIALIZADO**
+            
+            ¡Hola! 👋 Soy {self.personalidad['nombre']}, tu especialista en diagnóstico técnico de máquinas de casino.
+            
+            {self.personalidad['saludo']}
+            
+            🚀 **Puedo ayudarte con:**
+            • Diagnóstico de problemas técnicos
+            • Procedimientos de Vertex Controller 3.5/4.0
+            • Configuración de aceptadores (MEI, JCM)
+            • Problemas de comunicación y red
+            • Calibración y mantenimiento
+            
+            💡 **Ejemplos de lo que podés preguntar:**
+            • "Mi Vertex no enciende"
+            • "El aceptador rechaza billetes" 
+            • "Cómo hacer ram clear"
+            • "Problema de touch en Aristocrat Helix"
+            
+            ¡Contame, ¿en qué puedo asistirte hoy? 🤖🎰
+            """
+        
+        elif tipo_problema == 'pregunta_general':
+            return f"""
+            🎰 **{self.personalidad['nombre']}** - **SISTEMA DE ASISTENCIA TÉCNICA**
+            
+            {self.personalidad['saludo']}
+            
+            🔧 **Mi especialidad incluye:**
+            
+            🎯 **Vertex Controller:**
+            • Configuración 3.5/4.0
+            • Ram Clear y procedimientos
+            • Red progresiva
+            • Lightning Link
+            
+            🏭 **Fabricantes:**
+            • Aristocrat (Helix, Oasis, Edge)
+            • Bally (Alpha Pro, iView)  
+            • IGT (Peak, S3000)
+            • Konami (Concerto, KX)
+            
+            🔌 **Componentes:**
+            • Aceptadores MEI, JCM
+            • Sistemas de comunicación
+            • Pantallas touch
+            • Fuentes de poder
+            
+            💬 **Podés preguntarme:**
+            "Cómo configurar IP del Vertex"
+            "Mi máquina no enciende"
+            "Problema de comunicación MDB"
+            "Calibrar aceptador de billetes"
+            
+            ¡Decime qué problema tenés! 🛠️🎰
+            """
         
         # Primero analizar la pregunta para determinar contexto
         es_sobre_aceptador = any(palabra in pregunta.lower() for palabra in [
