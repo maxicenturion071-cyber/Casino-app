@@ -628,7 +628,8 @@ class CasinoProAISystem:
             'titulo': self.personalidad['titulo'],
             'eslogan': self.personalidad['eslogan'],
             'caracteristicas': self.personalidad['caracteristicas'],
-            'emoji_firma': self.personalidad['emoji_firma']
+            'emoji_firma': self.personalidad['emoji_firma'],
+            'saludo': self.personalidad['saludo']  # AÑADIDO PARA CORREGIR EL ERROR
         }
 
 # ==================== SISTEMA DE DIAGNÓSTICO CON CASINOPRO AI ====================
@@ -778,7 +779,19 @@ if 'show_feedback' not in st.session_state:
 # ==================== INTERFAZ PRINCIPAL CON CHAT ====================
 def main():
     # Header con información de CasinoPro AI
-    info_casinopro = st.session_state.diagnostic_system.casinopro_ai.obtener_info_sistema()
+    try:
+        info_casinopro = st.session_state.diagnostic_system.casinopro_ai.obtener_info_sistema()
+        saludo = info_casinopro.get('saludo', '¡Hola! Soy CasinoPro, tu especialista en diagnóstico técnico. ¿En qué puedo ayudarte hoy?')
+    except Exception as e:
+        # Fallback en caso de error
+        saludo = '¡Hola! Soy CasinoPro, tu especialista en diagnóstico técnico. ¿En qué puedo ayudarte hoy?'
+        info_casinopro = {
+            'nombre': 'CasinoPro',
+            'version': '2.2',
+            'titulo': '🎰 CasinoPro - Sistema Inteligente Especializado',
+            'eslogan': 'Tu asistente técnico inteligente para máquinas de casino',
+            'emoji_firma': '🤖🎰'
+        }
     
     st.title(info_casinopro['titulo'])
     st.markdown(f"**{info_casinopro['eslogan']}**")
@@ -787,18 +800,33 @@ def main():
     with st.sidebar:
         st.header(f"🎰 {info_casinopro['nombre']} AI")
         
-        stats = st.session_state.diagnostic_system.casinopro_ai.obtener_estadisticas()
-        
-        st.metric("📚 Patrones Aprendidos", stats['total_patrones'])
-        st.metric("💬 Consultas Totales", stats['total_conversaciones'])
-        st.metric("⭐ Feedback Recibido", stats['total_feedback'])
-        st.metric("🎓 Confianza Promedio", f"{stats['confianza_promedio']*100:.1f}%")
-        
-        st.info(f"🔄 **v{stats['version']}** - Último aprendizaje: {stats['ultimo_aprendizaje'][:16]}")
+        try:
+            stats = st.session_state.diagnostic_system.casinopro_ai.obtener_estadisticas()
+            
+            st.metric("📚 Patrones Aprendidos", stats['total_patrones'])
+            st.metric("💬 Consultas Totales", stats['total_conversaciones'])
+            st.metric("⭐ Feedback Recibido", stats['total_feedback'])
+            st.metric("🎓 Confianza Promedio", f"{stats['confianza_promedio']*100:.1f}%")
+            
+            st.info(f"🔄 **v{stats['version']}** - Último aprendizaje: {stats['ultimo_aprendizaje'][:16]}")
+        except:
+            st.metric("📚 Patrones Aprendidos", 0)
+            st.metric("💬 Consultas Totales", 0)
+            st.metric("⭐ Feedback Recibido", 0)
+            st.metric("🎓 Confianza Promedio", "0%")
+            st.info("🔄 **v2.2** - Sistema iniciando...")
         
         st.markdown("---")
         st.subheader("🚀 Características")
-        for caracteristica in info_casinopro['caracteristicas']:
+        caracteristicas = [
+            "25+ años de experiencia integrada",
+            "Aprendizaje automático continuo", 
+            "Especialista en Aristocrat, Bally, IGT, Konami",
+            "Conocimiento del manual CPU-4.2.2.X",
+            "Diagnóstico basado en patrones reales",
+            "Especialista en Vertex Controller 3.5/4.0"
+        ]
+        for caracteristica in caracteristicas:
             st.write(f"• {caracteristica}")
         
         # Información Vertex Controller en sidebar
@@ -868,7 +896,7 @@ def main():
             # Mostrar saludo inicial si no hay historial
             if not st.session_state.chat_history:
                 with st.chat_message("assistant"):
-                    st.write(f"**CasinoPro:** {info_casinopro['saludo']}")
+                    st.write(f"**CasinoPro:** {saludo}")
                     st.caption(f"🕐 {datetime.now().strftime('%H:%M')}")
         
         # Input de chat
@@ -893,24 +921,34 @@ def main():
             
             # Obtener respuesta de CasinoPro
             with st.spinner("🔍 CasinoPro está analizando..."):
-                respuesta = st.session_state.diagnostic_system.obtener_diagnostico_mejorado(
-                    user_input,
-                    "No específico"
-                )
-                
-                # Formatear respuesta para chat
-                respuesta_chat = respuesta['analisis_experto']
-                
-                # Agregar respuesta al historial
-                assistant_message = {
-                    'type': 'assistant',
-                    'content': respuesta_chat,
-                    'timestamp': datetime.now().strftime('%H:%M')
-                }
-                st.session_state.chat_history.append(assistant_message)
-                
-                st.session_state.last_response = respuesta
-                st.session_state.last_question = user_input
+                try:
+                    respuesta = st.session_state.diagnostic_system.obtener_diagnostico_mejorado(
+                        user_input,
+                        "No específico"
+                    )
+                    
+                    # Formatear respuesta para chat
+                    respuesta_chat = respuesta['analisis_experto']
+                    
+                    # Agregar respuesta al historial
+                    assistant_message = {
+                        'type': 'assistant',
+                        'content': respuesta_chat,
+                        'timestamp': datetime.now().strftime('%H:%M')
+                    }
+                    st.session_state.chat_history.append(assistant_message)
+                    
+                    st.session_state.last_response = respuesta
+                    st.session_state.last_question = user_input
+                    
+                except Exception as e:
+                    # Respuesta de fallback en caso de error
+                    error_message = {
+                        'type': 'assistant',
+                        'content': f"⚠️ Ocurrió un error al procesar tu consulta. Por favor, intentá nuevamente. Error: {str(e)}",
+                        'timestamp': datetime.now().strftime('%H:%M')
+                    }
+                    st.session_state.chat_history.append(error_message)
                 
             st.rerun()
         
@@ -958,7 +996,6 @@ def main():
         - Análisis técnico profundo
         """)
         
-        # (Mantener todo el código original del diagnóstico avanzado aquí)
         # Selección de aceptador (ahora opcional)
         col1, col2 = st.columns(2)
         
@@ -1034,39 +1071,43 @@ def main():
                         # Si no se seleccionó aceptador específico, pasar None
                         aceptador_para_analisis = aceptador_seleccionado if aceptador_seleccionado != "No específico" else "No específico"
                         
-                        respuesta = st.session_state.diagnostic_system.obtener_diagnostico_mejorado(
-                            pregunta_usuario,
-                            aceptador_para_analisis, 
-                            contexto_adicional
-                        )
-                        
-                        st.session_state.last_response = respuesta
-                        st.session_state.show_feedback = True
-                        
-                        # Mostrar resultados
-                        st.markdown("---")
-                        st.subheader("🎯 **Resultados del Diagnóstico CasinoPro**")
-                        
-                        # Información básica
-                        col1, col2 = st.columns(2)
-                        with col1:
-                            if aceptador_seleccionado != "No específico":
-                                st.write(f"**🤖 Aceptador:** {respuesta['aceptador']}")
-                                st.write(f"**🏭 Fabricante:** {respuesta['datos_maquina'].get('fabricante', 'N/A')}")
-                            else:
-                                st.write(f"**🎯 Tipo de consulta:** {tipo_consulta}")
-                                st.write(f"**🔧 Equipo:** Consulta general")
-                        with col2:
-                            st.write(f"**🎯 Confianza:** {respuesta['nivel_confianza']}")
-                            st.write(f"**📋 Prioridad:** {respuesta['prioridad_recomendada']}")
-                        
-                        # Análisis de CasinoPro AI
-                        st.markdown("### 🎰 **Análisis de CasinoPro AI**")
-                        st.info(respuesta['analisis_experto'])
-                        
-                        # Timestamp
-                        st.markdown("---")
-                        st.caption(f"🕐 Diagnóstico generado: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+                        try:
+                            respuesta = st.session_state.diagnostic_system.obtener_diagnostico_mejorado(
+                                pregunta_usuario,
+                                aceptador_para_analisis, 
+                                contexto_adicional
+                            )
+                            
+                            st.session_state.last_response = respuesta
+                            st.session_state.show_feedback = True
+                            
+                            # Mostrar resultados
+                            st.markdown("---")
+                            st.subheader("🎯 **Resultados del Diagnóstico CasinoPro**")
+                            
+                            # Información básica
+                            col1, col2 = st.columns(2)
+                            with col1:
+                                if aceptador_seleccionado != "No específico":
+                                    st.write(f"**🤖 Aceptador:** {respuesta['aceptador']}")
+                                    st.write(f"**🏭 Fabricante:** {respuesta['datos_maquina'].get('fabricante', 'N/A')}")
+                                else:
+                                    st.write(f"**🎯 Tipo de consulta:** {tipo_consulta}")
+                                    st.write(f"**🔧 Equipo:** Consulta general")
+                            with col2:
+                                st.write(f"**🎯 Confianza:** {respuesta['nivel_confianza']}")
+                                st.write(f"**📋 Prioridad:** {respuesta['prioridad_recomendada']}")
+                            
+                            # Análisis de CasinoPro AI
+                            st.markdown("### 🎰 **Análisis de CasinoPro AI**")
+                            st.info(respuesta['analisis_experto'])
+                            
+                            # Timestamp
+                            st.markdown("---")
+                            st.caption(f"🕐 Diagnóstico generado: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+                            
+                        except Exception as e:
+                            st.error(f"❌ Error al procesar el diagnóstico: {str(e)}")
                         
                 else:
                     st.warning("⚠️ Por favor, describí el problema técnico")
@@ -1130,60 +1171,65 @@ def main():
     elif st.session_state.current_menu == "📊 ESTADÍSTICAS AI":
         st.header("📊 Estadísticas de CasinoPro AI")
         
-        casino_pro = st.session_state.diagnostic_system.casinopro_ai
-        stats = casino_pro.obtener_estadisticas()
-        info = casino_pro.obtener_info_sistema()
-        
-        # Encabezado del sistema
-        st.subheader(f"🎰 {info['nombre']} v{stats['version']}")
-        st.write(f"**{info['eslogan']}**")
-        
-        # Métricas principales
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            st.metric("📚 Patrones Aprendidos", stats['total_patrones'])
-        with col2:
-            st.metric("💬 Consultas Totales", stats['total_conversaciones'])
-        with col3:
-            st.metric("⭐ Feedback Recibido", stats['total_feedback'])
-        with col4:
-            st.metric("🎓 Confianza Promedio", f"{stats['confianza_promedio']*100:.1f}%")
-        
-        # Información detallada
-        st.markdown("---")
-        st.subheader("📈 Detalles del Sistema")
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown("**📊 Rendimiento del Aprendizaje**")
-            st.write(f"• **Último aprendizaje**: {stats['ultimo_aprendizaje']}")
-            st.write(f"• **Tasa de aprendizaje activo**: {stats['confianza_promedio']*100:.1f}%")
-            st.write(f"• **Efectividad general**: {(stats['confianza_promedio']*100 - 10):.1f}%")
+        try:
+            casino_pro = st.session_state.diagnostic_system.casinopro_ai
+            stats = casino_pro.obtener_estadisticas()
+            info = casino_pro.obtener_info_sistema()
             
-        with col2:
-            st.markdown("**🎯 Capacidades del Sistema**")
-            for capacidad in info['caracteristicas']:
-                st.write(f"• {capacidad}")
-        
-        # Patrones aprendidos recientemente
-        st.markdown("---")
-        st.subheader("🧠 Patrones Aprendidos Recientemente")
-        
-        if casino_pro.learned_patterns:
-            # Mostrar los últimos 5 patrones
-            patrones_recientes = list(casino_pro.learned_patterns.items())[-5:]
+            # Encabezado del sistema
+            st.subheader(f"🎰 {info['nombre']} v{stats['version']}")
+            st.write(f"**{info['eslogan']}**")
             
-            for patron_hash, patron_data in reversed(patrones_recientes):
-                with st.expander(f"📝 {patron_data['question_pattern'][:50]}..."):
-                    st.write(f"**Tipo de problema**: {patron_data['problem_type']}")
-                    st.write(f"**Fabricante**: {patron_data['machine_type']}")
-                    st.write(f"**Confianza**: {patron_data['confidence']*100:.1f}%")
-                    st.write(f"**Veces usado**: {patron_data['usage_count']}")
-                    st.write(f"**Éxitos**: {patron_data.get('success_count', 0)}")
-                    st.write(f"**Primera detección**: {patron_data['first_seen'][:10]}")
-        else:
-            st.info("🤖 CasinoPro aún está aprendiendo. Realizá consultas para generar patrones.")
+            # Métricas principales
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.metric("📚 Patrones Aprendidos", stats['total_patrones'])
+            with col2:
+                st.metric("💬 Consultas Totales", stats['total_conversaciones'])
+            with col3:
+                st.metric("⭐ Feedback Recibido", stats['total_feedback'])
+            with col4:
+                st.metric("🎓 Confianza Promedio", f"{stats['confianza_promedio']*100:.1f}%")
+            
+            # Información detallada
+            st.markdown("---")
+            st.subheader("📈 Detalles del Sistema")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("**📊 Rendimiento del Aprendizaje**")
+                st.write(f"• **Último aprendizaje**: {stats['ultimo_aprendizaje']}")
+                st.write(f"• **Tasa de aprendizaje activo**: {stats['confianza_promedio']*100:.1f}%")
+                st.write(f"• **Efectividad general**: {(stats['confianza_promedio']*100 - 10):.1f}%")
+                
+            with col2:
+                st.markdown("**🎯 Capacidades del Sistema**")
+                for capacidad in info['caracteristicas']:
+                    st.write(f"• {capacidad}")
+            
+            # Patrones aprendidos recientemente
+            st.markdown("---")
+            st.subheader("🧠 Patrones Aprendidos Recientemente")
+            
+            if casino_pro.learned_patterns:
+                # Mostrar los últimos 5 patrones
+                patrones_recientes = list(casino_pro.learned_patterns.items())[-5:]
+                
+                for patron_hash, patron_data in reversed(patrones_recientes):
+                    with st.expander(f"📝 {patron_data['question_pattern'][:50]}..."):
+                        st.write(f"**Tipo de problema**: {patron_data['problem_type']}")
+                        st.write(f"**Fabricante**: {patron_data['machine_type']}")
+                        st.write(f"**Confianza**: {patron_data['confidence']*100:.1f}%")
+                        st.write(f"**Veces usado**: {patron_data['usage_count']}")
+                        st.write(f"**Éxitos**: {patron_data.get('success_count', 0)}")
+                        st.write(f"**Primera detección**: {patron_data['first_seen'][:10]}")
+            else:
+                st.info("🤖 CasinoPro aún está aprendiendo. Realizá consultas para generar patrones.")
+                
+        except Exception as e:
+            st.error(f"❌ Error al cargar las estadísticas: {str(e)}")
+            st.info("💡 Intentá usar el sistema primero para generar datos estadísticos")
     
     # ==================== MANUALES ====================
     elif st.session_state.current_menu == "💰 MANUALES":
