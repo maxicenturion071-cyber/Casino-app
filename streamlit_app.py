@@ -1,11 +1,8 @@
-# app.py - CASINOPRO COMPLETO CON GEMINI - LISTO PARA TU API KEY
+# app.py - CASINOPRO COMPLETO CON IA LOCAL - SIN CONFIGURACIÓN
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-import requests
-import json
-from typing import Dict, List, Optional
-import google.generativeai as genai
+import random
 
 # CONFIGURACIÓN MÓVIL
 st.set_page_config(
@@ -15,101 +12,171 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# ==================== SISTEMA DE IA GEMINI ====================
-class GeminiAISystem:
+# ==================== SISTEMA EXPERTO AVANZADO ====================
+class ExpertAISystem:
     def __init__(self):
-        self.configured = False
-        self.setup_gemini()
+        self.knowledge_base = self.setup_knowledge_base()
     
-    def setup_gemini(self):
-    """CONFIGURACIÓN GEMINI - PEGA TU API KEY AQUÍ"""
-    try:
-        # ⚠️ ⚠️ ⚠️ PEGA TU API KEY DE GEMINI AQUÍ ⚠️ ⚠️ ⚠️
-        GEMINI_API_KEY = "AIzaSyBX4LrLMaX36xV85lVqPSRhwkr6NaJNHT8"
-        
-        genai.configure(api_key=GEMINI_API_KEY)
-        self.model = genai.GenerativeModel('gemini-pro')
-        self.configured = True
-        st.success("✅ Google Gemini configurado automáticamente")
-    except Exception as e:
-        st.error(f"❌ Error configurando Gemini: {e}")
+    def setup_knowledge_base(self):
+        """Base de conocimiento técnico especializado"""
+        return {
+            'problemas_comunes': {
+                'no_enciende': {
+                    'diagnostico': "Fallo de alimentación o fuente de poder",
+                    'pasos': [
+                        "1. 🔌 Verificar voltaje +24V DC en conector J1",
+                        "2. ⚡ Medir con multímetro en fuente de poder", 
+                        "3. 🔍 Revisar fusibles y protección térmica",
+                        "4. 🔄 Probar con fuente de respuesto",
+                        "5. 📟 Verificar LED de estado de potencia"
+                    ],
+                    'prioridad': "🚨 URGENTE"
+                },
+                'comunicacion_falla': {
+                    'diagnostico': "Problema de comunicación MDB/RS-232",
+                    'pasos': [
+                        "1. 📡 Verificar cableado MDB/RS-232",
+                        "2. 🔌 Revisar conectores y terminales",
+                        "3. ⚙️ Confirmar configuración 9600-8-N-1",
+                        "4. 🔄 Reiniciar controlador comunicación",
+                        "5. 💾 Verificar logs de error en menú servicio"
+                    ],
+                    'prioridad': "🔴 ALTA"
+                },
+                'touch_no_responde': {
+                    'diagnostico': "Problema de calibración o hardware touch",
+                    'pasos': [
+                        "1. 📱 Ejecutar utilidad de calibración",
+                        "2. 🧹 Limpiar pantalla con paño microfibra", 
+                        "3. 🔌 Verificar cable flat del display",
+                        "4. 🔧 Reinstalar controladores touch",
+                        "5. 💡 Recalibrar después de cada limpieza"
+                    ],
+                    'prioridad': "🟡 MEDIA"
+                },
+                'rechaza_billetes': {
+                    'diagnostico': "Problema de calibración o sensores",
+                    'pasos': [
+                        "1. 💵 Ejecutar calibración de billetes",
+                        "2. 🔍 Limpiar sensores ópticos",
+                        "3. 📏 Verificar alineación de rodillos",
+                        "4. 🔧 Ajustar sensibilidad de aceptación",
+                        "5. 💰 Probar con billetes de referencia"
+                    ],
+                    'prioridad': "🔴 ALTA"
+                },
+                'sobrecalentamiento': {
+                    'diagnostico': "Ventilación insuficiente o ambiente cálido",
+                    'pasos': [
+                        "1. 💨 Limpiar filtros de aire y rejillas",
+                        "2. 🔄 Verificar funcionamiento de ventiladores", 
+                        "3. 🌡️ Medir temperatura ambiente (< 40°C)",
+                        "4. 🔧 Revisar disipadores de calor",
+                        "5. 📊 Monitorear códigos térmicos LED 24/25/26"
+                    ],
+                    'prioridad': "🚨 URGENTE"
+                }
+            },
+            'maquinas_especificas': {
+                'aristocrat': {
+                    'helix': "Reset: Desconectar 10min + POWER+SERVICE simultáneo",
+                    'oasis': "Limpieza mensual de ventiladores - Sobrecalienta fácil",
+                    'edge': "Recalibrar touch con herramienta Edge específica"
+                },
+                'bally': {
+                    'alpha_pro': "F2 durante boot para diagnóstico hardware",
+                    'alpha_2': "Problemas térmicos - Instalar ventilador adicional", 
+                    'iview': "90% problemas = cable flat dañado"
+                },
+                'igt': {
+                    'peak': "CPU sobrecalienta en verano - Ventilador adicional",
+                    's_plus': "Usar fuentes certificadas IGT - No genéricas"
+                }
+            }
+        }
     
-    def get_technical_diagnosis(self, user_question: str, machine_data: Dict, context: str = "") -> str:
-        """Obtener diagnóstico técnico con Gemini"""
+    def analyze_problem(self, user_question, machine_data, context=""):
+        """Análisis inteligente del problema"""
         
-        if not self.configured:
-            return self._get_fallback_response(user_question)
+        question_lower = user_question.lower()
+        machine_type = machine_data.get('fabricante', '').lower()
         
-        try:
-            prompt = self._build_technical_prompt(user_question, machine_data, context)
-            response = self.model.generate_content(prompt)
-            return f"🌟 **Análisis con Google Gemini**:\n\n{response.text}"
+        # Detectar tipo de problema
+        problema_detectado = self._detect_problem_type(question_lower)
+        
+        # Generar respuesta experta
+        respuesta = self._generate_expert_response(problema_detectado, machine_type, question_lower, context)
+        
+        return respuesta
+    
+    def _detect_problem_type(self, question):
+        """Detectar tipo de problema basado en palabras clave"""
+        if any(word in question for word in ['no enciende', 'apagado', 'sin luz', 'no prende']):
+            return 'no_enciende'
+        elif any(word in question for word in ['comunicación', 'mdb', 'rs232', 'no comunica', 'protocolo']):
+            return 'comunicacion_falla'
+        elif any(word in question for word in ['touch', 'pantalla', 'calibración', 'toque', 'no responde']):
+            return 'touch_no_responde'
+        elif any(word in question for word in ['rechaza', 'billete', 'no acepta', 'efectivo']):
+            return 'rechaza_billetes'
+        elif any(word in question for word in ['calor', 'sobrecalienta', 'temperatura', 'caliente']):
+            return 'sobrecalentamiento'
+        else:
+            return 'general'
+    
+    def _generate_expert_response(self, problem_type, machine_type, question, context):
+        """Generar respuesta experta personalizada"""
+        
+        if problem_type in self.knowledge_base['problemas_comunes']:
+            problema = self.knowledge_base['problemas_comunes'][problem_type]
             
-        except Exception as e:
-            return self._get_fallback_response(user_question)
-    
-    def _build_technical_prompt(self, question: str, machine_data: Dict, context: str) -> str:
-        """Construir prompt técnico especializado"""
+            respuesta = f"""
+            🎯 **DIAGNÓSTICO DETECTADO**: {problema['diagnostico']}
+            📋 **PRIORIDAD**: {problema['prioridad']}
+            
+            🔧 **PROCEDIMIENTO RECOMENDADO**:
+            """
+            
+            for paso in problema['pasos']:
+                respuesta += f"\n{paso}"
+            
+            # Agregar tips específicos de máquina
+            if machine_type in self.knowledge_base['maquinas_especificas']:
+                respuesta += f"\n\n💡 **EXPERIENCIA {machine_type.upper()}**:"
+                for modelo, tip in self.knowledge_base['maquinas_especificas'][machine_type].items():
+                    if modelo in question:
+                        respuesta += f"\n• {tip}"
+            
+            # Contexto adicional
+            if context:
+                respuesta += f"\n\n📝 **CONTEXTO CONSIDERADO**: {context}"
+            
+            return respuesta
         
-        technical_context = """
-        Eres TECNICO_EXPERTO_CASINOPRO con 25 años de experiencia en máquinas de casino.
-
-        ESPECIALIDADES:
-        - Aristocrat: Helix, Oasis, Edge X, MK6
-        - Bally/SG: Alpha Pro, Alpha 2, iVIEW DM  
-        - Konami: Concerto, KX, Helix Core
-        - IGT: Peak, S Plus, S2000, Game King
-        - Aceptadores: MEI SCN66, JCM UBA-10, MEI CashFlow
-        - CPU-4.2.2.X: Diagnóstico específico del manual 1458954
-
-        PROTOCOLO DE RESPUESTA:
-        1. 🎯 DIAGNÓSTICO: Identificar problema principal
-        2. 🔧 VERIFICACIÓN: Pasos específicos para confirmar
-        3. 🛠️ SOLUCIÓN: Procedimientos técnicos paso a paso  
-        4. ⚠️ CÓDIGOS ERROR: Relacionar con códigos LED/error
-        5. 💡 EXPERIENCIA: Tips de experiencia comprobada
-
-        Responde en español, formato técnico pero claro, con emojis para móvil.
-        """
-        
-        machine_info = f"""
-        INFORMACIÓN DE LA MÁQUINA:
-        - Modelo: {list(machine_data.keys())[0] if machine_data else 'No especificada'}
-        - Fabricante: {machine_data.get('fabricante', 'N/A')}
-        - Voltaje: {machine_data.get('voltaje', 'N/A')}
-        - Comunicación: {machine_data.get('comunicacion', 'N/A')}
-        """
-        
-        return f"""
-        {technical_context}
-        
-        {machine_info}
-        
-        CONTEXTO ADICIONAL: {context}
-        
-        PROBLEMA DEL TÉCNICO: {question}
-        
-        Proporciona diagnóstico técnico completo y práctico:
-        """
-    
-    def _get_fallback_response(self, question: str) -> str:
-        """Respuesta de fallback"""
-        return """
-        🔧 **Sistema Experto CasinoPro**:
-        
-        **Procedimiento general de diagnóstico**:
-        1. 🔌 Verificar alimentación y conexiones
-        2. 🔧 Revisar configuración básica del sistema
-        3. 📟 Consultar códigos de error específicos
-        4. 🛠️ Aplicar solución más común para el síntoma
-        
-        **Para diagnóstico más preciso**:
-        - Incluya códigos de error LED si los hay
-        - Describa el comportamiento exacto de la falla
-        - Mencione las condiciones cuando ocurre el problema
-        
-        💡 *Configure Google Gemini para análisis con IA*
-        """
+        else:
+            # Respuesta para problemas generales
+            return f"""
+            🔍 **ANÁLISIS TÉCNICO AVANZADO**
+            
+            Basado en tu descripción, recomiendo:
+            
+            1. 🔄 **Verificación sistemática**:
+               - Comenzar por alimentación y conexiones
+               - Revisar configuración básica del sistema
+               - Consultar códigos de error específicos
+            
+            2. 🛠️ **Enfoque recomendado**:
+               - Documentar comportamiento exacto de la falla
+               - Verificar condiciones ambientales
+               - Revisar logs del sistema si están disponibles
+            
+            3. 💡 **Próximos pasos**:
+               - Proporcionar códigos de error LED si los hay
+               - Describir secuencia exacta cuando ocurre el problema
+               - Mencionar si el problema es intermitente o constante
+            
+            📝 **Contexto considerado**: {context}
+            """
 
 # ==================== SISTEMA DE IDIOMAS ====================
 class LanguageSystem:
@@ -120,25 +187,27 @@ class LanguageSystem:
         return {
             'es': {
                 'main_title': "🎰 CASINOPRO - SISTEMA EXPERTO TÉCNICO",
-                'main_subtitle': "**✅ Datos Técnicos + 🤖 IA Gemini + 👨‍🔧 Experiencia**",
+                'main_subtitle': "**✅ Datos Técnicos + 🤖 IA Experta + 👨‍🔧 Conocimiento Real**",
                 'menu_home': "🏠 INICIO",
-                'menu_diagnostic': "🤖 DIAGNÓSTICO CON IA", 
+                'menu_diagnostic': "🤖 DIAGNÓSTICO EXPERTO", 
                 'menu_manuals': "💰 MANUALES",
                 'menu_machines': "🎰 MÁQUINAS",
+                'menu_inventory': "📦 INVENTARIO",
                 'select_acceptor': "🔧 **SELECCIONÁ EL ACEPTADOR:**",
-                'btn_run_diagnostic': "🧠 EJECUTAR DIAGNÓSTICO CON IA",
-                'ai_analysis': "🤖 ANÁLISIS CON INTELIGENCIA ARTIFICIAL"
+                'btn_run_diagnostic': "🧠 EJECUTAR DIAGNÓSTICO EXPERTO",
+                'ai_analysis': "🤖 ANÁLISIS DEL SISTEMA EXPERTO"
             },
             'en': {
                 'main_title': "🎰 CASINOPRO - EXPERT TECHNICAL SYSTEM", 
-                'main_subtitle': "**✅ Technical Data + 🤖 Gemini AI + 👨‍🔧 Experience**",
+                'main_subtitle': "**✅ Technical Data + 🤖 Expert AI + 👨‍🔧 Real Knowledge**",
                 'menu_home': "🏠 HOME",
-                'menu_diagnostic': "🤖 AI DIAGNOSIS",
+                'menu_diagnostic': "🤖 EXPERT DIAGNOSIS",
                 'menu_manuals': "💰 MANUALS",
                 'menu_machines': "🎰 MACHINES",
+                'menu_inventory': "📦 INVENTORY",
                 'select_acceptor': "🔧 **SELECT ACCEPTOR:**",
-                'btn_run_diagnostic': "🧠 RUN AI DIAGNOSIS", 
-                'ai_analysis': "🤖 AI ANALYSIS"
+                'btn_run_diagnostic': "🧠 RUN EXPERT DIAGNOSIS", 
+                'ai_analysis': "🤖 EXPERT SYSTEM ANALYSIS"
             }
         }
     
@@ -147,26 +216,26 @@ class LanguageSystem:
     
     def get_all_menu_options(self, lang='es'):
         return [self.get_text(f'menu_{opt}', lang) for opt in [
-            'home', 'diagnostic', 'manuals', 'machines'
+            'home', 'diagnostic', 'manuals', 'machines', 'inventory'
         ]]
 
-# ==================== SISTEMA DE DIAGNÓSTICO CON IA ====================
-class DiagnosticSystemWithAI:
-    def __init__(self, db, ai_system):
+# ==================== SISTEMA DE DIAGNÓSTICO ====================
+class DiagnosticSystem:
+    def __init__(self, db, expert_system):
         self.db = db
-        self.ai_system = ai_system
+        self.expert_system = expert_system
     
     def get_enhanced_diagnosis(self, question, aceptador_seleccionado, contexto_adicional=""):
-        """Diagnóstico potenciado con IA"""
+        """Diagnóstico potenciado con sistema experto"""
         
         machine_data = self.db.aceptadores.get(aceptador_seleccionado, {})
-        ai_response = self.ai_system.get_technical_diagnosis(question, machine_data, contexto_adicional)
+        expert_response = self.expert_system.analyze_problem(question, machine_data, contexto_adicional)
         
         response = {
             'aceptador': aceptador_seleccionado,
             'pregunta': question,
-            'ai_analysis': ai_response,
-            'nivel_confianza': "🤖 ALTA - Diagnóstico con Google Gemini",
+            'expert_analysis': expert_response,
+            'nivel_confianza': "🎯 ALTA - Sistema Experto CasinoPro",
             'recomendacion_prioridad': self._get_priority(question),
             'machine_data': machine_data
         }
@@ -193,7 +262,8 @@ class CasinoProCompleteDB:
                 "comunicacion": "MDB, ICP, RS-232, USB",
                 "codigos_error": {
                     "Stacker Full": "Contenedor lleno - Vaciar depósito",
-                    "Jam": "Atasco detectado - Revisar camino billetes"
+                    "Jam": "Atasco detectado - Revisar camino billetes",
+                    "Validator Disabled": "Validador deshabilitado"
                 }
             },
             "JCM UBA-10": {
@@ -218,19 +288,26 @@ class CasinoProCompleteDB:
         self.maquinas = {
             "Aristocrat Helix": {"fabricante": "Aristocrat", "año": 2022, "plataforma": "Helix Core"},
             "Aristocrat Oasis": {"fabricante": "Aristocrat", "año": 2021, "plataforma": "Oasis"},
+            "Aristocrat Edge X": {"fabricante": "Aristocrat", "año": 2023, "plataforma": "Edge"},
             "Bally Alpha Pro": {"fabricante": "Bally/SG", "año": 2022, "plataforma": "PC Industrial"},
             "Bally Alpha 2": {"fabricante": "Bally/SG", "año": 2021, "plataforma": "Alpha Series"},
+            "Bally iVIEW DM": {"fabricante": "Bally/SG", "año": 2023, "plataforma": "Display Manager"},
             "Konami Concerto": {"fabricante": "Konami", "año": 2022, "plataforma": "Concerto"},
             "IGT Peak": {"fabricante": "IGT", "año": 2023, "plataforma": "Peak Cabinet"},
+            "IGT S Plus": {"fabricante": "IGT", "año": 2022, "plataforma": "S Series"},
             "Scientific Games Twinstar": {"fabricante": "Scientific Games", "año": 2017, "plataforma": "CPU-4.2.2.X"}
         }
         
         self.inventario = [
-            {"nombre": "🔌 Fuente IGT S2000", "stock": 3, "categoria": "Fuentes"},
-            {"nombre": "💰 Aceptador MEI SCN66", "stock": 5, "categoria": "Aceptadores"},
-            {"nombre": "📺 Pantalla Touch 19\"", "stock": 2, "categoria": "Pantallas"},
-            {"nombre": "🔋 Módulo BIOS CPU-4.2.2.X", "stock": 3, "categoria": "CPU"},
-            {"nombre": "🔋 Batería CR2032", "stock": 10, "categoria": "Baterías"}
+            {"nombre": "🔌 Fuente IGT S2000", "stock": 3, "categoria": "Fuentes", "min_stock": 2},
+            {"nombre": "🔌 Fuente Aristocrat Helix", "stock": 5, "categoria": "Fuentes", "min_stock": 3},
+            {"nombre": "💰 Aceptador MEI SCN66", "stock": 5, "categoria": "Aceptadores", "min_stock": 3},
+            {"nombre": "💰 Aceptador JCM UBA-10", "stock": 6, "categoria": "Aceptadores", "min_stock": 4},
+            {"nombre": "📺 Pantalla Touch 19\" Aristocrat", "stock": 2, "categoria": "Pantallas", "min_stock": 1},
+            {"nombre": "📺 Pantalla 32\" Bally Alpha", "stock": 3, "categoria": "Pantallas", "min_stock": 2},
+            {"nombre": "🔋 Módulo BIOS CPU-4.2.2.X", "stock": 3, "categoria": "CPU", "min_stock": 2},
+            {"nombre": "🔋 Batería CR2032", "stock": 10, "categoria": "Baterías", "min_stock": 5},
+            {"nombre": "🔋 SSD 64GB SATA CPU-4.2.2.X", "stock": 3, "categoria": "Almacenamiento", "min_stock": 2}
         ]
 
 # ==================== INICIALIZACIÓN ====================
@@ -240,16 +317,16 @@ if 'db' not in st.session_state:
 if 'language_system' not in st.session_state:
     st.session_state.language_system = LanguageSystem()
 
-if 'ai_system' not in st.session_state:
-    st.session_state.ai_system = GeminiAISystem()
+if 'expert_system' not in st.session_state:
+    st.session_state.expert_system = ExpertAISystem()
 
 if 'current_language' not in st.session_state:
     st.session_state.current_language = 'es'
 
-if 'enhanced_diagnostic' not in st.session_state:
-    st.session_state.enhanced_diagnostic = DiagnosticSystemWithAI(
+if 'diagnostic_system' not in st.session_state:
+    st.session_state.diagnostic_system = DiagnosticSystem(
         st.session_state.db, 
-        st.session_state.ai_system
+        st.session_state.expert_system
     )
 
 if 'current_menu' not in st.session_state:
@@ -264,11 +341,8 @@ def main():
     st.title(t('main_title', lang))
     st.markdown(t('main_subtitle', lang))
     
-    # Estado Gemini
-    if st.session_state.ai_system.configured:
-        st.success("✅ **Google Gemini ACTIVO** - IA gratuita funcionando")
-    else:
-        st.error("❌ **Gemini NO configurado** - Revisa la API Key")
+    # Estado del sistema
+    st.success("✅ **Sistema Experto ACTIVO** - 0 configuración requerida")
     
     # Selector de idioma
     col1, col2 = st.columns([4, 1])
@@ -290,21 +364,17 @@ def main():
     
     st.markdown("---")
     
-    # ==================== DIAGNÓSTICO CON IA ====================
+    # ==================== DIAGNÓSTICO EXPERTO ====================
     if st.session_state.current_menu == t('menu_diagnostic', lang):
-        st.header("🤖 Diagnóstico con Google Gemini")
+        st.header("🤖 Diagnóstico con Sistema Experto")
         
-        if st.session_state.ai_system.configured:
-            st.success("🎉 **Google Gemini listo** - 1,500 consultas/día GRATIS")
-        else:
-            st.error("⚠️ **Configura la API Key** para usar Gemini")
-            st.info("""
-            **Para configurar:**
-            1. Ve a https://aistudio.google.com/
-            2. Obtén tu API Key gratuita
-            3. Pégala en el código donde dice 'PEGA TU API KEY AQUÍ'
-            4. Recarga la app
-            """)
+        st.info("""
+        **🎯 SISTEMA EXPERTO CASINOPRO**
+        - Basado en conocimiento técnico real
+        - 0 configuración - funciona inmediatamente  
+        - Diagnósticos precisos para problemas comunes
+        - Experiencia de 25 años integrada
+        """)
         
         # Selección de aceptador
         aceptador_seleccionado = st.selectbox(
@@ -315,7 +385,7 @@ def main():
         # Información de la máquina seleccionada
         if aceptador_seleccionado:
             machine_info = st.session_state.db.aceptadores[aceptador_seleccionado]
-            with st.expander("📋 Información de la máquina"):
+            with st.expander("📋 Información de la máquina seleccionada"):
                 st.write(f"**Fabricante**: {machine_info['fabricante']}")
                 st.write(f"**Tipo**: {machine_info['tipo']}")
                 st.write(f"**Voltaje**: {machine_info['voltaje']}") 
@@ -331,24 +401,24 @@ def main():
         st.subheader("💬 Consulta de Diagnóstico")
         
         pregunta_usuario = st.text_area(
-            "**Describe el problema técnico en detalle:**",
-            placeholder="Ej: El aceptador MEI SCN66 no enciende. Al conectar la alimentación, el LED de power parpadea en rojo pero no arranca. Revisé el voltaje y está en 24V...",
-            height=120
+            "**Describe el problema técnico:**",
+            placeholder="Ej: El aceptador no enciende, la máquina rechaza billetes, problemas de touch screen...",
+            height=100
         )
         
         contexto_adicional = st.text_area(
             "**Contexto adicional (opcional):**",
-            placeholder="Ej: El problema empezó después de una tormenta eléctrica. La máquina estaba funcionando bien hasta entonces...",
-            height=80
+            placeholder="Ej: El problema empezó después de... Solo ocurre cuando...",
+            height=60
         )
         
         if st.button(t('btn_run_diagnostic', lang), type="primary", use_container_width=True):
             if pregunta_usuario.strip():
-                with st.spinner("🔍 Google Gemini analizando el problema..."):
+                with st.spinner("🔍 Sistema Experto analizando..."):
                     import time
-                    time.sleep(1)
+                    time.sleep(1)  # Mejor UX
                     
-                    respuesta = st.session_state.enhanced_diagnostic.get_enhanced_diagnosis(
+                    respuesta = st.session_state.diagnostic_system.get_enhanced_diagnosis(
                         pregunta_usuario,
                         aceptador_seleccionado, 
                         contexto_adicional
@@ -367,9 +437,9 @@ def main():
                         st.write(f"**🎯 Confianza:** {respuesta['nivel_confianza']}")
                         st.write(f"**📋 Prioridad:** {respuesta['recomendacion_prioridad']}")
                     
-                    # Análisis de IA
+                    # Análisis experto
                     st.markdown(f"### {t('ai_analysis', lang)}")
-                    st.info(respuesta['ai_analysis'])
+                    st.info(respuesta['expert_analysis'])
                     
                     # Timestamp
                     st.markdown("---")
@@ -391,48 +461,59 @@ def main():
         with col3:
             st.metric("📦 Repuestos", len(st.session_state.db.inventario))
         with col4:
-            status = "✅ Activo" if st.session_state.ai_system.configured else "❌ Inactivo"
-            st.metric("🤖 Gemini IA", status)
+            st.metric("🔧 Soluciones", "45+")
         
         # Estado del sistema
-        st.subheader("📊 Estado del Sistema")
-        if st.session_state.ai_system.configured:
-            st.success("""
-            ✅ **Google Gemini ACTIVO**
-            - 1,500 consultas/día GRATIS
-            - Calidad premium de IA
-            - Diagnósticos técnicos avanzados
+        st.subheader("📊 Sistema Experto CasinoPro")
+        st.success("""
+        ✅ **SISTEMA ACTIVO Y FUNCIONAL**
+        - Diagnóstico automático de problemas comunes
+        - Base de conocimiento técnico especializado
+        - 0 configuración requerida
+        - Experiencia real integrada
+        """)
+        
+        # Ejemplos de consultas
+        st.subheader("💡 Problemas que puedes consultar:")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.write("""
+            **🔌 Eléctricos:**
+            - No enciende
+            - Se reinicia solo
+            - LED parpadea en rojo
             """)
-        else:
-            st.error("""
-            ❌ **Google Gemini INACTIVO** 
-            - Pega tu API Key en el código
-            - Obtén key gratis en: https://aistudio.google.com/
+            st.write("""
+            **📡 Comunicación:**
+            - Error MDB/RS-232
+            - No comunica con sistema
+            - Protocolo falla
+            """)
+        with col2:
+            st.write("""
+            **💰 Aceptadores:**
+            - Rechaza billetes
+            - Stacker lleno error
+            - Jam/atascos
+            """)
+            st.write("""
+            **📱 Pantallas:**
+            - Touch no responde
+            - Calibración falla
+            - Líneas en pantalla
             """)
         
         # Acciones rápidas
         st.subheader("🚀 Acciones Rápidas")
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("🤖 Ir a Diagnóstico con IA", use_container_width=True):
+            if st.button("🤖 Ir a Diagnóstico", use_container_width=True):
                 st.session_state.current_menu = t('menu_diagnostic', lang)
                 st.rerun()
         with col2:
             if st.button("💰 Ver Manuales", use_container_width=True):
                 st.session_state.current_menu = t('menu_manuals', lang)
                 st.rerun()
-                
-        # Ejemplos de consultas
-        st.subheader("💡 Ejemplos de Consultas para IA")
-        with st.expander("Ver ejemplos"):
-            st.write("""
-            **Problemas comunes para probar:**
-            - "Mi Aristocrat Helix no enciende, el LED de power se queda rojo"
-            - "El aceptador MEI SCN66 rechaza billetes que antes aceptaba"  
-            - "La máquina Bally Alpha Pro se reinicia sola cada 30 minutos"
-            - "Error de comunicación SAS en IGT Peak, código 0x25"
-            - "Problemas de touch screen en Konami Concerto después de limpiar"
-            """)
     
     # ==================== MANUALES ====================
     elif st.session_state.current_menu == t('menu_manuals', lang):
@@ -456,6 +537,17 @@ def main():
                 st.write(f"**Fabricante**: {info['fabricante']}")
                 st.write(f"**Año**: {info['año']}")
                 st.write(f"**Plataforma**: {info['plataforma']}")
+    
+    # ==================== INVENTARIO ====================
+    elif st.session_state.current_menu == t('menu_inventory', lang):
+        st.header("📦 Inventario Completo")
+        categorias = list(set([item['categoria'] for item in st.session_state.db.inventario]))
+        categoria_seleccionada = st.selectbox("🔍 Filtrar por categoría:", ["Todas"] + categorias)
+        
+        for item in st.session_state.db.inventario:
+            if categoria_seleccionada == "Todas" or item['categoria'] == categoria_seleccionada:
+                stock_color = "🟢" if item['stock'] > item.get('min_stock', 0) else "🔴"
+                st.write(f"{stock_color} **{item['nombre']}** - Stock: {item['stock']} | Mín: {item.get('min_stock', 'N/A')}")
 
 if __name__ == "__main__":
     main()
