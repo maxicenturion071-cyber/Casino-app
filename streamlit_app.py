@@ -18,7 +18,7 @@ st.set_page_config(
 class CasinoProAISystem:
     def __init__(self):
         self.nombre = "CasinoPro"
-        self.version = "2.1"
+        self.version = "2.2"  # Actualizada por integración Vertex
         self.personalidad = self.setup_personalidad()
         self.knowledge_base = self.setup_knowledge_base()
         self.conversation_memory = []
@@ -41,7 +41,8 @@ class CasinoProAISystem:
                 "Aprendizaje automático continuo", 
                 "Especialista en Aristocrat, Bally, IGT, Konami",
                 "Conocimiento del manual CPU-4.2.2.X",
-                "Diagnóstico basado en patrones reales"
+                "Diagnóstico basado en patrones reales",
+                "Especialista en Vertex Controller 3.5/4.0"  # Nueva característica
             ]
         }
     
@@ -84,7 +85,7 @@ class CasinoProAISystem:
             st.sidebar.error(f"❌ Error guardando datos: {e}")
     
     def setup_knowledge_base(self):
-        """Base de conocimiento inicial de CasinoPro"""
+        """Base de conocimiento inicial de CasinoPro - MEJORADA CON VERTEX"""
         return {
             'problemas_comunes': {
                 'no_enciende': {
@@ -198,6 +199,66 @@ class CasinoProAISystem:
                     'confidence': 0.88,
                     'usage_count': 0,
                     'success_rate': 0.80
+                },
+                # NUEVOS PROBLEMAS VERTEX CONTROLLER
+                'vertex_no_enciende': {
+                    'diagnostico': "Problema de alimentación Vertex Controller",
+                    'pasos': [
+                        "1. 🔌 Verificar fuente de poder externa (Vertex 4.0)",
+                        "2. ⚡ Medir voltaje de entrada +24V DC",
+                        "3. 🔍 Revisar botón frontal - PULSAR Y SOLTAR, no mantener",
+                        "4. 📟 Verificar LED de estado del controlador",
+                        "5. 🔄 Probar con fuente de respuesto certificada",
+                        "6. ⚠️ NUNCA desconectar de red eléctrica directamente"
+                    ],
+                    'prioridad': "🚨 URGENTE",
+                    'confidence': 0.92,
+                    'usage_count': 0,
+                    'success_rate': 0.85
+                },
+                'vertex_comunicacion': {
+                    'diagnostico': "Problema de red o configuración IP Vertex",
+                    'pasos': [
+                        "1. 🌐 Verificar IP estática: 192.168.50.2",
+                        "2. 🔌 Revisar conexión switch DHCP",
+                        "3. ⚙️ Menú Network → IP estático → 192.168.50.2/255.255.255.0",
+                        "4. 🔄 Reiniciar controlador después de cambio de IP",
+                        "5. 💻 Probar escritorio remoto: 192.168.50.2",
+                        "6. 📡 Verificar todas EGMs conectadas al mismo switch"
+                    ],
+                    'prioridad': "🔴 ALTA",
+                    'confidence': 0.88,
+                    'usage_count': 0,
+                    'success_rate': 0.80
+                },
+                'vertex_database': {
+                    'diagnostico': "Base de datos defectuosa en Vertex Controller",
+                    'pasos': [
+                        "1. 💾 Verificar estado base datos en pantalla principal",
+                        "2. ❌ Si no muestra 'Passed' = disco defectuoso",
+                        "3. 🔄 Reemplazar disco rígido inmediatamente",
+                        "4. 📊 Realizar Ram Clear: DataBase → BackUp/Restore → Ram Clear",
+                        "5. 🔧 Reconfigurar controlador desde cero",
+                        "6. 💿 Verificar plugin CFAST1 en Vertex 4.0"
+                    ],
+                    'prioridad': "🔴 ALTA",
+                    'confidence': 0.90,
+                    'usage_count': 0,
+                    'success_rate': 0.75
+                },
+                'vertex_jurisdiccion': {
+                    'diagnostico': "Configuración de jurisdicción incorrecta",
+                    'pasos': [
+                        "1. 🌎 USER INTERFACE → Seleccionar jurisdicción",
+                        "2. 🇦🇷 Para Argentina: Argentina - Buenos Aires",
+                        "3. 🔧 Credenciales VERTEX 4.0: Retail1/Retail1",
+                        "4. 🔑 Credenciales VERTEX 3.5: admin/Password1",
+                        "5. 💾 Guardar configuración y reiniciar controlador"
+                    ],
+                    'prioridad': "🟡 MEDIA",
+                    'confidence': 0.85,
+                    'usage_count': 0,
+                    'success_rate': 0.90
                 }
             },
             'fabricantes_especificos': {
@@ -228,11 +289,39 @@ class CasinoProAISystem:
                     'helix_core': "Reset mensual preventivo recomendado",
                     'general': "Problemas comunes: voltaje y calibración"
                 },
+                'vertex': {
+                    'vertex_3.5': "Solo 1 puerto USB - Requiere HUB USB para teclado/mouse",
+                    'vertex_4.0': "Display Port o VGA - Fuente externa al controlador",
+                    'configuracion_red': "Todas EGMs y controlador via switch DHCP",
+                    'lightning_link': "Plugin específico para progresivos Lighting Link",
+                    'general': "Problemas comunes: base datos, comunicación, jurisdicción"
+                },
                 'general': {
                     'aceptadores': "Los aceptadores suelen fallar por suciedad en sensores",
                     'fuente_poder': "Verificar siempre voltajes de salida primero",
                     'pantallas': "90% problemas de pantalla son por cables flat",
                     'comunicacion': "Revisar configuración MDB/RS-232 siempre"
+                }
+            },
+            'vertex_controller': {
+                'vertex_3.5': {
+                    'ensamblaje': "Remover tapa frontal con tuerca 7mm, conectar disco SATA y Plugin CF",
+                    'configuracion_ip': "IP: 192.168.50.2, Mask: 255.255.255.0, Gateway: 192.168.50.1",
+                    'credenciales': "Usuario: Retail1, Contraseña: Retail1 (VERTEX 4.0)",
+                    'apagado_correcto': "PULSAR Y SOLTAR botón frontal - NO mantener presionado",
+                    'problemas_comunes': "Base de datos defectuosa si no muestra 'Passed'"
+                },
+                'vertex_4.0': {
+                    'ensamblaje': "Remover placa aluminio (disipador RAM), montar disco, plugin CFAST1",
+                    'alimentacion': "Fuente externa al controlador (diferente a v3.5)",
+                    'configuracion_red': "Todos dispositivos conectados via switch DHCP",
+                    'estructura_red': "8 máquinas Helix XT + Splitter HDMI + AMP + Switch"
+                },
+                'procedimientos_criticos': {
+                    'ram_clear': "Menú DataBase → BackUp/Restore → Ram Clear",
+                    'cambio_jurisdiccion': "USER INTERFACE → Seleccionar Argentina - Buenos Aires",
+                    'asociar_egms': "EGMs → Add New EGM → Seleccionar MAC Address",
+                    'runaway_threshold': "Progressives → Options → Runaway Meter Threshold: 200000"
                 }
             },
             'nuevos_problemas': {},
@@ -335,8 +424,24 @@ class CasinoProAISystem:
         return True
     
     def _detectar_tipo_problema(self, pregunta):
-        """Detectar tipo de problema basado en palabras clave"""
+        """Detectar tipo de problema basado en palabras clave - MEJORADA CON VERTEX"""
         pregunta_lower = pregunta.lower()
+        
+        # PROBLEMAS VERTEX CONTROLLER - DETECCIÓN MEJORADA
+        if any(palabra in pregunta_lower for palabra in [
+            'vertex', 'controlador progresivo', 'banco progresivo', 'helix xt', 'progressive', 
+            'vertex 3.5', 'vertex 4.0', 'vertex controller', 'progresivo'
+        ]):
+            if any(palabra in pregunta_lower for palabra in ['no enciende', 'apagado', 'power', 'no prende']):
+                return 'vertex_no_enciende'
+            elif any(palabra in pregunta_lower for palabra in ['comunicación', 'conexión', 'network', 'ip', 'red']):
+                return 'vertex_comunicacion'
+            elif any(palabra in pregunta_lower for palabra in ['base datos', 'database', 'passed', 'disco']):
+                return 'vertex_database'
+            elif any(palabra in pregunta_lower for palabra in ['jurisdicción', 'argentina', 'buenos aires', 'configuración']):
+                return 'vertex_jurisdiccion'
+            else:
+                return 'vertex_general'
         
         # Detección mejorada de problemas
         if any(palabra in pregunta_lower for palabra in ['no enciende', 'apagado', 'sin luz', 'no prende', 'no arranca', 'no power']):
@@ -363,11 +468,16 @@ class CasinoProAISystem:
             return 'general'
     
     def _generar_respuesta_casinopro(self, tipo_problema, datos_maquina, pregunta, contexto):
-        """Generar respuesta con el estilo y conocimiento de CasinoPro"""
+        """Generar respuesta con el estilo y conocimiento de CasinoPro - MEJORADA CON VERTEX"""
         
         # Primero analizar la pregunta para determinar si es sobre aceptador o máquina completa
         es_sobre_aceptador = any(palabra in pregunta.lower() for palabra in [
             'aceptador', 'validator', 'billete', 'bill', 'efectivo', 'cash', 'scn', 'uba'
+        ])
+        
+        # DETECCIÓN ESPECIAL PARA VERTEX CONTROLLER
+        es_sobre_vertex = any(palabra in pregunta.lower() for palabra in [
+            'vertex', 'controlador progresivo', 'banco progresivo', 'helix xt', 'progressive'
         ])
         
         if tipo_problema in self.knowledge_base['problemas_comunes']:
@@ -390,8 +500,25 @@ class CasinoProAISystem:
             for paso in problema['pasos']:
                 respuesta += f"\n{paso}"
             
+            # AGREGAR CONOCIMIENTO ESPECÍFICO VERTEX CONTROLLER
+            if es_sobre_vertex:
+                respuesta += "\n\n🎰 **CONOCIMIENTO ESPECÍFICO VERTEX CONTROLLER**:"
+                conocimiento_vertex = self.knowledge_base['vertex_controller']
+                
+                if '3.5' in pregunta.lower():
+                    for area, info in conocimiento_vertex['vertex_3.5'].items():
+                        respuesta += f"\n• **{area.title()}**: {info}"
+                elif '4.0' in pregunta.lower():
+                    for area, info in conocimiento_vertex['vertex_4.0'].items():
+                        respuesta += f"\n• **{area.title()}**: {info}"
+                
+                # Agregar procedimientos críticos
+                respuesta += "\n\n🔧 **PROCEDIMIENTOS CRÍTICOS VERTEX**:"
+                for proc, desc in conocimiento_vertex['procedimientos_criticos'].items():
+                    respuesta += f"\n• **{proc.replace('_', ' ').title()}**: {desc}"
+            
             # Agregar conocimiento específico solo si es relevante
-            if datos_maquina and es_sobre_aceptador:
+            elif datos_maquina and es_sobre_aceptador:
                 fabricante = datos_maquina.get('fabricante', '').lower()
                 for fab_key, fab_data in self.knowledge_base['fabricantes_especificos'].items():
                     if fab_key in fabricante:
@@ -401,7 +528,7 @@ class CasinoProAISystem:
                                 respuesta += f"\n• **{modelo.replace('_', ' ').title()}**: {consejo}"
             
             # Agregar conocimiento general si no es específico de aceptador
-            if not es_sobre_aceptador:
+            if not es_sobre_aceptador and not es_sobre_vertex:
                 respuesta += f"\n\n💡 **CONOCIMIENTO GENERAL MÁQUINAS CASINO**:"
                 conocimiento_general = self.knowledge_base['fabricantes_especificos']['general']
                 for area, consejo in conocimiento_general.items():
@@ -608,6 +735,12 @@ class CasinoProCompleteDB:
             "Konami Helix Core": {"fabricante": "Konami", "año": 2022},
             "Konami Dimension": {"fabricante": "Konami", "año": 2021},
             
+            # VERTEX CONTROLLERS - NUEVOS
+            "Vertex Controller 3.5": {"fabricante": "Aristocrat", "año": 2018},
+            "Vertex Controller 4.0": {"fabricante": "Aristocrat", "año": 2020},
+            "Aristocrat Helix XT LCD": {"fabricante": "Aristocrat", "año": 2022},
+            "Aristocrat Helix XT": {"fabricante": "Aristocrat", "año": 2021},
+            
             # OTHER MANUFACTURERS
             "Ainsworth A-Star": {"fabricante": "Ainsworth", "año": 2022},
             "Aruze Oasis": {"fabricante": "Aruze", "año": 2021},
@@ -615,6 +748,13 @@ class CasinoProCompleteDB:
             "Multimedia Games E32": {"fabricante": "MG", "año": 2022},
             "Novomatic Gaminator": {"fabricante": "Novomatic", "año": 2021},
             "WMS Bluebird 2": {"fabricante": "WMS", "año": 2020}
+        }
+
+        # NUEVO: COMPONENTES VERTEX
+        self.componentes_vertex = {
+            "Aristocrat Media Player (AMP)": {"tipo": "Reproductor Multimedia", "conexion": "HDMI"},
+            "Splitter HDMI 8 salidas": {"tipo": "Distribuidor Video", "conexion": "HDMI"},
+            "Switch DHCP Progresivo": {"tipo": "Networking", "puertos": "8+"}
         }
 
 # ==================== INICIALIZACIÓN ====================
@@ -658,6 +798,14 @@ def main():
         st.subheader("🚀 Características")
         for caracteristica in info_casinopro['caracteristicas']:
             st.write(f"• {caracteristica}")
+        
+        # NUEVO: Información Vertex Controller en sidebar
+        st.markdown("---")
+        st.subheader("🎰 Especialidad Vertex")
+        st.write("• Vertex Controller 3.5/4.0")
+        st.write("• Bancos progresivos")
+        st.write("• Configuración Lighting Link")
+        st.write("• Redes progresivas")
     
     st.markdown("---")
     
@@ -692,6 +840,7 @@ def main():
         - Aprendizaje automático continuo
         - Conocimiento específico por fabricante
         - Análisis contextual inteligente
+        - **ESPECIALIDAD VERTEX CONTROLLER 3.5/4.0** ✅
         """)
         
         # Selección de aceptador (ahora opcional)
@@ -707,7 +856,7 @@ def main():
             # Nueva selección de tipo de máquina
             tipo_consulta = st.selectbox(
                 "🎯 **TIPO DE CONSULTA:**",
-                ["Problema general", "Aceptador específico", "Máquina completa", "Software/Sistema"]
+                ["Problema general", "Aceptador específico", "Máquina completa", "Software/Sistema", "Vertex Controller"]
             )
         
         # Información de la máquina seleccionada solo si es relevante
@@ -719,20 +868,38 @@ def main():
                 st.write(f"**Voltaje**: {info_maquina['voltaje']}")
                 st.write(f"**Comunicación**: {info_maquina['comunicacion']}")
         
+        # NUEVO: Información específica para Vertex Controller
+        if tipo_consulta == "Vertex Controller":
+            with st.expander("🎰 INFORMACIÓN VERTEX CONTROLLER", expanded=True):
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.write("**Vertex 3.5**")
+                    st.write("• 1 puerto USB (requiere HUB)")
+                    st.write("• Disco SATA + Plugin CF")
+                    st.write("• Credenciales: admin/Password1")
+                
+                with col2:
+                    st.write("**Vertex 4.0**")
+                    st.write("• Display Port/VGA")
+                    st.write("• Fuente externa")
+                    st.write("• Credenciales: Retail1/Retail1")
+                
+                st.info("**IP Configuración**: 192.168.50.2 | Mask: 255.255.255.0 | Gateway: 192.168.50.1")
+        
         # Área de diagnóstico
         st.markdown("---")
         st.subheader("💬 Consulta de Diagnóstico")
         
         pregunta_usuario = st.text_area(
             "**Describí el problema técnico:**",
-            placeholder="Ej: Mi Aristocrat Helix no enciende después de una tormenta, la pantalla se queda negra y no responde a ningún botón...",
+            placeholder="Ej: Mi Vertex Controller 4.0 no comunica con las Helix XT después del cambio de IP...",
             height=120,
             key="pregunta_casinopro"
         )
         
         contexto_adicional = st.text_area(
             "**Contexto adicional (opcional):**",
-            placeholder="Ej: El problema empezó después de una actualización de software, solo ocurre cuando la máquina está caliente...",
+            placeholder="Ej: El problema empezó después de una actualización, solo ocurre con ciertas EGMs...",
             height=80
         )
         
@@ -906,12 +1073,13 @@ def main():
     elif st.session_state.current_menu == "💰 MANUALES":
         st.header("💰 Manuales Técnicos")
         
-        st.info("""
+        st.success("""
         **📚 Biblioteca de Manuales CasinoPro**
         - Documentación técnica especializada
         - Procedimientos de calibración
         - Diagramas de conexión
         - Códigos de error
+        - **MANUALES VERTEX CONTROLLER** ✅
         """)
         
         manuales = {
@@ -920,7 +1088,10 @@ def main():
             "IGT Peak": "Manual del operador y técnico - Sistema PEAK",
             "Konami Concerto": "Documentación técnica Concerto Platform",
             "MEI SCN66": "Manual de instalación y configuración",
-            "JCM UBA-10": "Guía de mantenimiento preventivo"
+            "JCM UBA-10": "Guía de mantenimiento preventivo",
+            "Vertex Controller 3.5": "Manual completo armado y configuración",  # NUEVO
+            "Vertex Controller 4.0": "Instructivo progresivos Lighting Link",   # NUEVO
+            "Vertex Red Progresiva": "Estructura de red y componentes"         # NUEVO
         }
         
         col1, col2 = st.columns(2)
@@ -942,9 +1113,10 @@ def main():
         - Especificaciones técnicas completas
         - Configuraciones recomendadas
         - Problemas comunes documentados
+        - **VERTEX CONTROLLERS INCLUIDOS** ✅
         """)
         
-        # Mostrar máquinas disponibles - AHORA CON 22+ MÁQUINAS
+        # Mostrar máquinas disponibles - AHORA CON 26+ MÁQUINAS
         st.subheader(f"📊 Total de máquinas en base de datos: {len(st.session_state.db.maquinas)}")
         
         # Agrupar por fabricante
@@ -959,7 +1131,22 @@ def main():
         for fabricante, maquinas_list in fabricantes.items():
             with st.expander(f"🏭 {fabricante} ({len(maquinas_list)} máquinas)"):
                 for maquina, detalles in maquinas_list:
-                    st.write(f"**🎰 {maquina}** - Año: {detalles['año']} - ✅ Compatible con CasinoPro")
+                    # Destacar Vertex Controllers
+                    if "Vertex" in maquina:
+                        st.write(f"**🎰 {maquina}** - Año: {detalles['año']} - ✅ **ESPECIALIDAD CASINOPRO**")
+                    else:
+                        st.write(f"**🎰 {maquina}** - Año: {detalles['año']} - ✅ Compatible con CasinoPro")
+        
+        # NUEVO: Mostrar componentes Vertex
+        st.markdown("---")
+        st.subheader("🔧 Componentes Vertex Controller")
+        
+        for componente, info in st.session_state.db.componentes_vertex.items():
+            with st.expander(f"🔌 {componente}"):
+                st.write(f"**Tipo**: {info['tipo']}")
+                st.write(f"**Conexión**: {info['conexion']}")
+                if 'puertos' in info:
+                    st.write(f"**Puertos**: {info['puertos']}")
     
     # ==================== INICIO ====================
     else:  # Página de INICIO
@@ -974,6 +1161,7 @@ def main():
         - 🔄 **Aprendizaje automático continuo** que mejora con cada consulta
         - 🎯 **Conocimiento específico** por fabricante y modelo
         - ⭐ **Sistema de feedback** que aprende de tu experiencia
+        - 🎰 **ESPECIALIDAD VERTEX CONTROLLER 3.5/4.0** ✅
         """)
         
         # Características principales
@@ -1005,6 +1193,24 @@ def main():
             st.metric("🔧 Aceptadores", f"{len(st.session_state.db.aceptadores)}+")
         with col4:
             st.metric("📚 Problemas", f"{len(st.session_state.diagnostic_system.casinopro_ai.knowledge_base['problemas_comunes'])}+")
+        
+        # NUEVO: Especialidad Vertex
+        st.markdown("---")
+        st.subheader("🎰 Especialidad Vertex Controller")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("**Vertex 3.5**")
+            st.write("• Ensamblaje disco SATA + Plugin CF")
+            st.write("• Configuración IP: 192.168.50.2")
+            st.write("• Credenciales: admin/Password1")
+            
+        with col2:
+            st.markdown("**Vertex 4.0**")
+            st.write("• Ensamblaje plugin CFAST1")
+            st.write("• Fuente de poder externa")
+            st.write("• Credenciales: Retail1/Retail1")
         
         st.markdown("---")
         
