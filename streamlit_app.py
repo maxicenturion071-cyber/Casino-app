@@ -329,7 +329,7 @@ class CasinoProAISystem:
                 self.learned_patterns[pregunta_hash]['confidence'] = min(0.98, self.learned_patterns[pregunta_hash]['confidence'] + 0.05)
             else:
                 self.learned_patterns[pregunta_hash]['failure_count'] += 1
-                self.learned_patterns[preganta_hash]['confidence'] = max(0.30, self.learned_patterns[pregunta_hash]['confidence'] - 0.10)
+                self.learned_patterns[pregunta_hash]['confidence'] = max(0.30, self.learned_patterns[pregunta_hash]['confidence'] - 0.10)
         
         self.save_learned_data()
         return True
@@ -514,7 +514,7 @@ class DiagnosticSystemWithCasinoPro:
     def obtener_diagnostico_mejorado(self, pregunta, aceptador_seleccionado, contexto_adicional=""):
         """Diagnóstico potenciado con CasinoPro AI"""
         
-        datos_maquina = self.db.aceptadores.get(aceptador_seleccionado, {})
+        datos_maquina = self.db.aceptadores.get(aceptador_seleccionado, {}) if aceptador_seleccionado != "No específico" else {}
         
         # Obtener análisis de CasinoPro AI - CORREGIDO: No forzar enfoque en aceptador
         respuesta_experta = self.casinopro_ai.analizar_problema(pregunta, datos_maquina, contexto_adicional)
@@ -540,7 +540,7 @@ class DiagnosticSystemWithCasinoPro:
         else:
             return "🟡 PRIORIDAD MEDIA - Atender durante el día"
 
-# ==================== BASE DE DATOS COMPLETA ====================
+# ==================== BASE DE DATOS COMPLETA CON 22+ MÁQUINAS ====================
 class CasinoProCompleteDB:
     def __init__(self):
         self.aceptadores = {
@@ -561,15 +561,60 @@ class CasinoProCompleteDB:
                 "tipo": "Aceptador Inteligente",
                 "voltaje": "+24V DC ±5%",
                 "comunicacion": "MDB, Ethernet, USB"
+            },
+            "Aristocrat NV9": {
+                "fabricante": "Aristocrat",
+                "tipo": "Validación Avanzada",
+                "voltaje": "+24V DC ±8%",
+                "comunicacion": "MDB, SAS, RS-232"
+            },
+            "MEI SC Advance": {
+                "fabricante": "Crane Payment Innovations", 
+                "tipo": "Aceptador de Monedas",
+                "voltaje": "+24V DC ±12%",
+                "comunicacion": "MDB, RS-232"
             }
         }
         
         self.maquinas = {
+            # ARISTOCRAT
             "Aristocrat Helix": {"fabricante": "Aristocrat", "año": 2022},
             "Aristocrat Oasis": {"fabricante": "Aristocrat", "año": 2021},
+            "Aristocrat Edge X": {"fabricante": "Aristocrat", "año": 2023},
+            "Aristocrat Edge C": {"fabricante": "Aristocrat", "año": 2022},
+            "Aristocrat MK6": {"fabricante": "Aristocrat", "año": 2020},
+            "Aristocrat MK5": {"fabricante": "Aristocrat", "año": 2018},
+            "Aristocrat Hyperlink": {"fabricante": "Aristocrat", "año": 2021},
+            "Aristocrat Sirius": {"fabricante": "Aristocrat", "año": 2022},
+            
+            # BALLY
             "Bally Alpha Pro": {"fabricante": "Bally/SG", "año": 2022},
+            "Bally Alpha 2": {"fabricante": "Bally/SG", "año": 2021},
+            "Bally iView": {"fabricante": "Bally/SG", "año": 2023},
+            "Bally Pro Wave": {"fabricante": "Bally/SG", "año": 2022},
+            "Bally CineVision": {"fabricante": "Bally/SG", "año": 2021},
+            
+            # IGT
+            "IGT Peak": {"fabricante": "IGT", "año": 2023},
+            "IGT PeakBarTop": {"fabricante": "IGT", "año": 2022},
+            "IGT S3000": {"fabricante": "IGT", "año": 2021},
+            "IGT S2000": {"fabricante": "IGT", "año": 2020},
+            "IGT Game King": {"fabricante": "IGT", "año": 2022},
+            "IGT Advantage": {"fabricante": "IGT", "año": 2021},
+            
+            # KONAMI
             "Konami Concerto": {"fabricante": "Konami", "año": 2022},
-            "IGT Peak": {"fabricante": "IGT", "año": 2023}
+            "Konami KX": {"fabricante": "Konami", "año": 2023},
+            "Konami Helix Core": {"fabricante": "Konami", "año": 2022},
+            "Konami Dimension": {"fabricante": "Konami", "año": 2021},
+            
+            # OTHER MANUFACTURERS
+            "Ainsworth A-Star": {"fabricante": "Ainsworth", "año": 2022},
+            "Aruze Oasis": {"fabricante": "Aruze", "año": 2021},
+            "Everi CineLuxe": {"fabricante": "Everi", "año": 2023},
+            "Multimedia Games E32": {"fabricante": "MG", "año": 2022},
+            "Novomatic Gaminator": {"fabricante": "Novomatic", "año": 2021},
+            "WMS Bluebird 2": {"fabricante": "WMS", "año": 2020}
         }
 
 # ==================== INICIALIZACIÓN ====================
@@ -899,17 +944,22 @@ def main():
         - Problemas comunes documentados
         """)
         
-        # Mostrar máquinas disponibles
+        # Mostrar máquinas disponibles - AHORA CON 22+ MÁQUINAS
+        st.subheader(f"📊 Total de máquinas en base de datos: {len(st.session_state.db.maquinas)}")
+        
+        # Agrupar por fabricante
+        fabricantes = {}
         for maquina, detalles in st.session_state.db.maquinas.items():
-            with st.expander(f"🎰 {maquina}"):
-                st.write(f"**Fabricante**: {detalles['fabricante']}")
-                st.write(f"**Año**: {detalles['año']}")
-                st.write(f"**Estado**: ✅ Compatible con CasinoPro")
-                
-                # Mostrar aceptadores compatibles
-                st.write("**🔄 Aceptadores Compatibles**:")
-                for aceptador in st.session_state.db.aceptadores.keys():
-                    st.write(f"  • {aceptador}")
+            fabricante = detalles['fabricante']
+            if fabricante not in fabricantes:
+                fabricantes[fabricante] = []
+            fabricantes[fabricante].append((maquina, detalles))
+        
+        # Mostrar por fabricante
+        for fabricante, maquinas_list in fabricantes.items():
+            with st.expander(f"🏭 {fabricante} ({len(maquinas_list)} máquinas)"):
+                for maquina, detalles in maquinas_list:
+                    st.write(f"**🎰 {maquina}** - Año: {detalles['año']} - ✅ Compatible con CasinoPro")
     
     # ==================== INICIO ====================
     else:  # Página de INICIO
@@ -940,6 +990,21 @@ def main():
         with col3:
             st.markdown("### 🔄 Adaptativo")
             st.write("Mejora continuamente con cada consulta")
+        
+        st.markdown("---")
+        
+        # Estadísticas de la base de datos
+        st.subheader("📈 Base de Conocimiento CasinoPro")
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric("🏭 Fabricantes", "6+")
+        with col2:
+            st.metric("🎰 Máquinas", f"{len(st.session_state.db.maquinas)}+")
+        with col3:
+            st.metric("🔧 Aceptadores", f"{len(st.session_state.db.aceptadores)}+")
+        with col4:
+            st.metric("📚 Problemas", f"{len(st.session_state.diagnostic_system.casinopro_ai.knowledge_base['problemas_comunes'])}+")
         
         st.markdown("---")
         
