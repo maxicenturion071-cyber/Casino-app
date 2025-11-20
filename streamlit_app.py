@@ -200,6 +200,36 @@ class CasinoProAISystem:
                     'usage_count': 0,
                     'success_rate': 0.80
                 },
+                # NUEVOS PROBLEMAS AGREGADOS
+                'problema_pagos': {
+                    'diagnostico': "Falla en sistema de pagos o hopper",
+                    'pasos': [
+                        "1. 💰 Verificar nivel de monedas en hopper",
+                        "2. 🔧 Revisar sensores de pago y dispensación",
+                        "3. ⚙️ Calibrar mecanismo de pago",
+                        "4. 🔄 Ejecutar test de dispensación",
+                        "5. 📊 Verificar logs de transacciones"
+                    ],
+                    'prioridad': "🔴 ALTA",
+                    'confidence': 0.85,
+                    'usage_count': 0,
+                    'success_rate': 0.75
+                },
+                'problema_botones': {
+                    'diagnostico': "Falla en panel de botones o controles",
+                    'pasos': [
+                        "1. 🔘 Verificar conexiones de panel de control",
+                        "2. 🔧 Revisar estado físico de botones",
+                        "3. ⚡ Medir continuidad en switches",
+                        "4. 💻 Probar en modo diagnóstico",
+                        "5. 🔄 Reemplazar botones defectuosos"
+                    ],
+                    'prioridad': "🟡 MEDIA",
+                    'confidence': 0.80,
+                    'usage_count': 0,
+                    'success_rate': 0.70
+                },
+                # VERTEX CONTROLLER PROBLEMS
                 'vertex_no_enciende': {
                     'diagnostico': "Problema de alimentación Vertex Controller",
                     'pasos': [
@@ -258,6 +288,66 @@ class CasinoProAISystem:
                     'confidence': 0.85,
                     'usage_count': 0,
                     'success_rate': 0.90
+                },
+                'vertex_ram_clear': {
+                    'diagnostico': "Procedimiento Ram Clear para Vertex Controller",
+                    'pasos': [
+                        "1. 💻 Acceder a Vertex Controller (192.168.50.2)",
+                        "2. 📊 Navegar a: DataBase → BackUp/Restore → Ram Clear",
+                        "3. ⚠️ CONFIRMAR: Esto borrará toda configuración actual",
+                        "4. 🔄 El sistema se reiniciará automáticamente",
+                        "5. 🔧 Reconfigurar desde cero después del Ram Clear",
+                        "6. 💾 Tener backup de configuración antes de proceder"
+                    ],
+                    'prioridad': "🔴 ALTA",
+                    'confidence': 0.95,
+                    'usage_count': 0,
+                    'success_rate': 0.85
+                },
+                'vertex_config_ip': {
+                    'diagnostico': "Configuración de red IP para Vertex",
+                    'pasos': [
+                        "1. 🌐 Menú Network → Configuración IP",
+                        "2. ⚙️ Seleccionar IP estático: 192.168.50.2",
+                        "3. 🛡️ Mask: 255.255.255.0",
+                        "4. 🚪 Gateway: 192.168.50.1",
+                        "5. 💾 Guardar configuración",
+                        "6. 🔄 Reiniciar controlador para aplicar cambios"
+                    ],
+                    'prioridad': "🟡 MEDIA",
+                    'confidence': 0.90,
+                    'usage_count': 0,
+                    'success_rate': 0.95
+                },
+                'vertex_agregar_egm': {
+                    'diagnostico': "Agregar nueva EGM al sistema Vertex",
+                    'pasos': [
+                        "1. 🎰 Menú EGMs → Add New EGM",
+                        "2. 🔍 Seleccionar MAC Address de la máquina",
+                        "3. 📝 Asignar nombre descriptivo",
+                        "4. 💾 Guardar configuración",
+                        "5. 🔄 Verificar comunicación en lista de EGMs",
+                        "6. 📊 Confirmar que aparece como 'Connected'"
+                    ],
+                    'prioridad': "🟡 MEDIA",
+                    'confidence': 0.88,
+                    'usage_count': 0,
+                    'success_rate': 0.90
+                },
+                'vertex_lightning_link': {
+                    'diagnostico': "Configuración Lightning Link progresivo",
+                    'pasos': [
+                        "1. ⚡ Menú Progressives → Lightning Link",
+                        "2. 🔧 Configurar plugin específico",
+                        "3. ⚙️ Establecer Runaway Meter Threshold: 200000",
+                        "4. 💾 Guardar configuración progresiva",
+                        "5. 🔄 Reiniciar controlador",
+                        "6. 📡 Verificar comunicación con EGMs"
+                    ],
+                    'prioridad': "🔴 ALTA",
+                    'confidence': 0.85,
+                    'usage_count': 0,
+                    'success_rate': 0.80
                 }
             },
             'fabricantes_especificos': {
@@ -423,53 +513,118 @@ class CasinoProAISystem:
         return True
     
     def _detectar_tipo_problema(self, pregunta):
-        """Detectar tipo de problema basado en palabras clave - MEJORADA CON VERTEX"""
+        """Detectar tipo de problema basado en palabras clave - MEJORADA GENERAL"""
         pregunta_lower = pregunta.lower()
         
+        # DETECCIÓN MEJORADA PARA PROCEDIMIENTOS ESPECÍFICOS
+        procedimientos_especificos = {
+            # PROCEDIMIENTOS VERTEX
+            'ram clear': 'vertex_ram_clear',
+            'ramclear': 'vertex_ram_clear', 
+            'clear ram': 'vertex_ram_clear',
+            'reset base de datos': 'vertex_ram_clear',
+            'formatear vertex': 'vertex_ram_clear',
+            'limpiar ram': 'vertex_ram_clear',
+            
+            'configurar ip vertex': 'vertex_config_ip',
+            'cambiar ip vertex': 'vertex_config_ip',
+            'ip vertex': 'vertex_config_ip',
+            'configurar red vertex': 'vertex_config_ip',
+            'red vertex': 'vertex_config_ip',
+            
+            'jurisdicción vertex': 'vertex_jurisdiccion',
+            'cambiar jurisdicción': 'vertex_jurisdiccion',
+            'configurar argentina': 'vertex_jurisdiccion',
+            'buenos aires vertex': 'vertex_jurisdiccion',
+            
+            'agregar egm': 'vertex_agregar_egm',
+            'añadir máquina': 'vertex_agregar_egm',
+            'conectar helix xt': 'vertex_agregar_egm',
+            'asociar máquina': 'vertex_agregar_egm',
+            
+            'lightning link': 'vertex_lightning_link',
+            'configurar progresivo': 'vertex_lightning_link',
+            'progresivo lighting': 'vertex_lightning_link',
+            
+            # PROCEDIMIENTOS GENERALES
+            'calibrar touch': 'touch_no_responde',
+            'calibración pantalla': 'touch_no_responde',
+            'reset touch': 'touch_no_responde',
+            
+            'calibrar aceptador': 'rechaza_billetes',
+            'calibración billetes': 'rechaza_billetes',
+            'configurar aceptador': 'rechaza_billetes',
+            
+            'reset fábrica': 'error_sistema',
+            'restaurar configuración': 'error_sistema',
+            'formatear máquina': 'error_sistema',
+            
+            'actualizar firmware': 'error_sistema',
+            'upgrade software': 'error_sistema',
+            'instalar actualización': 'error_sistema',
+            
+            'limpiar ventiladores': 'sobrecalentamiento',
+            'limpieza filtros': 'sobrecalentamiento',
+            'mantenimiento térmico': 'sobrecalentamiento',
+            
+            'configurar red': 'problema_red',
+            'cambiar ip': 'problema_red',
+            'conexión network': 'problema_red',
+            
+            'test sonido': 'problema_audio',
+            'configurar audio': 'problema_audio',
+            'problema altavoz': 'problema_audio',
+            
+            'calibrar hopper': 'problema_pagos',
+            'configurar pagos': 'problema_pagos',
+            'test dispensación': 'problema_pagos'
+        }
+        
+        # Buscar procedimientos específicos primero (más precisos)
+        for keyword, procedimiento in procedimientos_especificos.items():
+            if keyword in pregunta_lower:
+                return procedimiento
+        
         # PROBLEMAS VERTEX CONTROLLER - DETECCIÓN MEJORADA
-        if any(palabra in pregunta_lower for palabra in [
-            'vertex', 'controlador progresivo', 'banco progresivo', 'helix xt', 'progressive', 
-            'vertex 3.5', 'vertex 4.0', 'vertex controller', 'progresivo'
-        ]):
-            if any(palabra in pregunta_lower for palabra in ['no enciende', 'apagado', 'power', 'no prende']):
+        vertex_keywords = ['vertex', 'controlador progresivo', 'banco progresivo', 'helix xt', 'progressive', 'vertex 3.5', 'vertex 4.0', 'vertex controller', 'progresivo']
+        if any(palabra in pregunta_lower for palabra in vertex_keywords):
+            if any(palabra in pregunta_lower for palabra in ['no enciende', 'apagado', 'power', 'no prende', 'no arranca']):
                 return 'vertex_no_enciende'
-            elif any(palabra in pregunta_lower for palabra in ['comunicación', 'conexión', 'network', 'ip', 'red']):
+            elif any(palabra in pregunta_lower for palabra in ['comunicación', 'conexión', 'network', 'ip', 'red', 'no comunica']):
                 return 'vertex_comunicacion'
-            elif any(palabra in pregunta_lower for palabra in ['base datos', 'database', 'passed', 'disco']):
+            elif any(palabra in pregunta_lower for palabra in ['base datos', 'database', 'passed', 'disco', 'hard drive']):
                 return 'vertex_database'
-            elif any(palabra in pregunta_lower for palabra in ['jurisdicción', 'argentina', 'buenos aires', 'configuración']):
+            elif any(palabra in pregunta_lower for palabra in ['jurisdicción', 'argentina', 'buenos aires', 'configuración', 'jurisdiction']):
                 return 'vertex_jurisdiccion'
             else:
                 return 'vertex_general'
         
-        # Detección mejorada de problemas
-        if any(palabra in pregunta_lower for palabra in ['no enciende', 'apagado', 'sin luz', 'no prende', 'no arranca', 'no power']):
-            return 'no_enciende'
-        elif any(palabra in pregunta_lower for palabra in ['comunicación', 'mdb', 'rs232', 'no comunica', 'protocolo', 'sas', 'network']):
-            return 'comunicacion_falla'
-        elif any(palabra in pregunta_lower for palabra in ['touch', 'pantalla', 'calibración', 'toque', 'no responde', 'táctil', 'display']):
-            return 'touch_no_responde'
-        elif any(palabra in pregunta_lower for palabra in ['rechaza', 'billete', 'no acepta', 'efectivo', 'aceptador', 'validator', 'bill']):
-            return 'rechaza_billetes'
-        elif any(palabra in pregunta_lower for palabra in ['calor', 'sobrecalienta', 'temperatura', 'caliente', 'ventilador', 'therm', 'hot']):
-            return 'sobrecalentamiento'
-        elif any(palabra in pregunta_lower for palabra in ['error', 'código', 'led', 'falla', 'bios', 'post', 'boot']):
-            return 'error_sistema'
-        elif any(palabra in pregunta_lower for palabra in ['sonido', 'audio', 'altavoz', 'speaker', 'mute', 'silenci']):
-            return 'problema_audio'
-        elif any(palabra in pregunta_lower for palabra in ['red', 'network', 'internet', 'wifi', 'ethernet', 'conexión']):
-            return 'problema_red'
-        elif any(palabra in pregunta_lower for palabra in ['jackpot', 'premio', 'pago', 'pay', 'winner']):
-            return 'problema_pagos'
-        elif any(palabra in pregunta_lower for palabra in ['botón', 'button', 'tecla', 'key', 'switch']):
-            return 'problema_botones'
-        else:
-            return 'general'
+        # DETECCIÓN MEJORADA DE PROBLEMAS GENERALES
+        problemas = {
+            'no_enciende': ['no enciende', 'apagado', 'sin luz', 'no prende', 'no arranca', 'no power', 'sin energía', 'no da señal', 'muerta'],
+            'comunicacion_falla': ['comunicación', 'mdb', 'rs232', 'no comunica', 'protocolo', 'sas', 'network', 'conexión', 'desconectado', 'offline'],
+            'touch_no_responde': ['touch', 'pantalla', 'calibración', 'toque', 'no responde', 'táctil', 'display', 'pantalla táctil', 'touchscreen'],
+            'rechaza_billetes': ['rechaza', 'billete', 'no acepta', 'efectivo', 'aceptador', 'validator', 'bill', 'dinero', 'cash', 'scn', 'uba'],
+            'sobrecalentamiento': ['calor', 'sobrecalienta', 'temperatura', 'caliente', 'ventilador', 'therm', 'hot', 'recalentamiento', 'fans'],
+            'error_sistema': ['error', 'código', 'led', 'falla', 'bios', 'post', 'boot', 'crash', 'bloqueo', 'freeze', 'congelado'],
+            'problema_audio': ['sonido', 'audio', 'altavoz', 'speaker', 'mute', 'silenci', 'volumen', 'beep', 'tono'],
+            'problema_red': ['red', 'network', 'internet', 'wifi', 'ethernet', 'conexión', 'ip', 'dns', 'router', 'switch'],
+            'problema_pagos': ['jackpot', 'premio', 'pago', 'pay', 'winner', 'hopper', 'dispensador', 'monedas', 'coins', 'payout'],
+            'problema_botones': ['botón', 'button', 'tecla', 'key', 'switch', 'control', 'mando', 'no funciona botón']
+        }
+        
+        # Buscar problemas generales
+        for problema, keywords in problemas.items():
+            if any(keyword in pregunta_lower for keyword in keywords):
+                return problema
+        
+        # Si no se encuentra ningún patrón específico
+        return 'general'
     
     def _generar_respuesta_casinopro(self, tipo_problema, datos_maquina, pregunta, contexto):
-        """Generar respuesta con el estilo y conocimiento de CasinoPro - MEJORADA CON VERTEX"""
+        """Generar respuesta con el estilo y conocimiento de CasinoPro - MEJORADA"""
         
-        # Primero analizar la pregunta para determinar si es sobre aceptador o máquina completa
+        # Primero analizar la pregunta para determinar contexto
         es_sobre_aceptador = any(palabra in pregunta.lower() for palabra in [
             'aceptador', 'validator', 'billete', 'bill', 'efectivo', 'cash', 'scn', 'uba'
         ])
@@ -629,7 +784,7 @@ class CasinoProAISystem:
             'eslogan': self.personalidad['eslogan'],
             'caracteristicas': self.personalidad['caracteristicas'],
             'emoji_firma': self.personalidad['emoji_firma'],
-            'saludo': self.personalidad['saludo']  # AÑADIDO PARA CORREGIR EL ERROR
+            'saludo': self.personalidad['saludo']
         }
 
 # ==================== SISTEMA DE DIAGNÓSTICO CON CASINOPRO AI ====================
@@ -643,7 +798,7 @@ class DiagnosticSystemWithCasinoPro:
         
         datos_maquina = self.db.aceptadores.get(aceptador_seleccionado, {}) if aceptador_seleccionado != "No específico" else {}
         
-        # Obtener análisis de CasinoPro AI - CORREGIDO: No forzar enfoque en aceptador
+        # Obtener análisis de CasinoPro AI
         respuesta_experta = self.casinopro_ai.analizar_problema(pregunta, datos_maquina, contexto_adicional)
         
         respuesta = {
@@ -750,7 +905,7 @@ class CasinoProCompleteDB:
             "WMS Bluebird 2": {"fabricante": "WMS", "año": 2020}
         }
 
-        # NUEVO: COMPONENTES VERTEX
+        # COMPONENTES VERTEX
         self.componentes_vertex = {
             "Aristocrat Media Player (AMP)": {"tipo": "Reproductor Multimedia", "conexion": "HDMI"},
             "Splitter HDMI 8 salidas": {"tipo": "Distribuidor Video", "conexion": "HDMI"},
@@ -985,7 +1140,7 @@ def main():
                 })
                 st.rerun()
     
-    # ==================== DIAGNÓSTICO AVANZADO (MANTENIDO) ====================
+    # ==================== DIAGNÓSTICO AVANZADO ====================
     elif st.session_state.current_menu == "🤖 DIAGNÓSTICO AVANZADO":
         st.header("🤖 Diagnóstico Avanzado con CasinoPro")
         
@@ -1278,7 +1433,7 @@ def main():
         - **VERTEX CONTROLLERS INCLUIDOS** ✅
         """)
         
-        # Mostrar máquinas disponibles - AHORA CON 26+ MÁQUINAS
+        # Mostrar máquinas disponibles
         st.subheader(f"📊 Total de máquinas en base de datos: {len(st.session_state.db.maquinas)}")
         
         # Agrupar por fabricante
