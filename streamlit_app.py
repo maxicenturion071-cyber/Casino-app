@@ -1,24 +1,110 @@
-# app.py - CASINOPRO CON IA "CASINOPRO" - Sistema de Chat Inteligente
+# app.py - CASINOPRO CON DEEPSEEK AI - SIN CARPETA .STREAMLIT
 import streamlit as st
 import pandas as pd
 import json
 import os
 from datetime import datetime
 import hashlib
+import requests
 
 # CONFIGURACIÓN MÓVIL
 st.set_page_config(
-    page_title="CasinoPro AI System",
+    page_title="CasinoPro DeepSeek AI",
     page_icon="🎰", 
     layout="centered",
     initial_sidebar_state="collapsed"
 )
 
+# ==================== CONFIGURACIÓN DEEPSEEK DIRECTA ====================
+# TU API KEY DIRECTAMENTE EN EL CÓDIGO - NO NECESITA CARPETA
+DEEPSEEK_API_KEY = "sk-18abe409931b4e25ada2e7e9ac6126f3"
+
+# ==================== DEEPSEEK API REAL ====================
+class DeepSeekAPI:
+    def __init__(self):
+        self.api_key = DEEPSEEK_API_KEY  # DIRECTAMENTE DEL CÓDIGO
+        self.base_url = "https://api.deepseek.com/v1/chat/completions"
+        self.model = "deepseek-chat"
+    
+    def consultar_deepseek(self, pregunta, contexto_tecnico=""):
+        """Consultar la API real de DeepSeek"""
+        
+        if not self.api_key:
+            return "❌ API Key no configurada"
+        
+        # Prompt especializado para CasinoPro
+        system_prompt = f"""
+        Eres CasinoPro, un sistema experto en diagnóstico técnico de máquinas de casino con 25+ años de experiencia integrada.
+
+        ESPECIALIDADES TÉCNICAS:
+        - Vertex Controller 3.5 y 4.0 (configuración, Ram Clear, IP 192.168.50.2)
+        - Aceptadores MEI SCN66, JCM UBA-10, CashFlow 7000, Aristocrat NV9
+        - Máquinas Aristocrat (Helix, Oasis, Edge, MK6), Bally (Alpha Pro, iView), IGT (Peak, S3000), Konami (Concerto, KX)
+        - Diagnóstico de: no enciende, problemas comunicación MDB/RS-232, touch no responde, rechazo de billetes, sobrecalentamiento
+        - Procedimientos técnicos específicos y prioridades de reparación
+        - Configuración de redes progresivas y Lightning Link
+
+        CONTEXTO ESPECÍFICO:
+        {contexto_tecnico}
+
+        Responde como experto técnico:
+        - Usa formato técnico claro con pasos numerados
+        - Incluye emojis relevantes para cada paso
+        - Especifica niveles de prioridad (🚨 URGENTE, 🔴 ALTA, 🟡 MEDIA)
+        - Basa las soluciones en experiencia real de campo
+        - Sé preciso y específico con procedimientos
+        - Mantén un estilo técnico pero amigable
+        """
+        
+        try:
+            response = requests.post(
+                self.base_url,
+                headers={
+                    "Authorization": f"Bearer {self.api_key}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": self.model,
+                    "messages": [
+                        {
+                            "role": "system", 
+                            "content": system_prompt
+                        },
+                        {
+                            "role": "user", 
+                            "content": pregunta
+                        }
+                    ],
+                    "temperature": 0.1,
+                    "max_tokens": 2000,
+                    "stream": False
+                },
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                return response.json()["choices"][0]["message"]["content"]
+            else:
+                error_msg = f"❌ Error API DeepSeek: {response.status_code}"
+                if response.status_code == 401:
+                    error_msg += " - API Key inválida"
+                elif response.status_code == 429:
+                    error_msg += " - Límite de requests excedido"
+                return error_msg
+                
+        except requests.exceptions.Timeout:
+            return "⏰ Timeout - DeepSeek no respondió a tiempo"
+        except Exception as e:
+            return f"⚠️ Error de conexión: {str(e)}"
+
 # ==================== IA "CASINOPRO" - SISTEMA INTELIGENTE ESPECIALIZADO ====================
 class CasinoProAISystem:
     def __init__(self):
         self.nombre = "CasinoPro"
-        self.version = "2.2"
+        self.version = "2.3"
+        self.ia_modelo = "DeepSeek AI"
+        self.codigo_ia = "DEEPSEEK-CP-VTX-8876"
+        self.deepseek_api = DeepSeekAPI()
         self.personalidad = self.setup_personalidad()
         self.knowledge_base = self.setup_knowledge_base()
         self.conversation_memory = []
@@ -31,12 +117,14 @@ class CasinoProAISystem:
         """Personalidad y estilo de la IA CasinoPro"""
         return {
             'nombre': 'CasinoPro',
-            'titulo': '🎰 CasinoPro - Sistema Inteligente Especializado',
-            'eslogan': 'Tu asistente técnico inteligente para máquinas de casino',
+            'ia_modelo': 'DeepSeek AI',
+            'titulo': '🎰 CasinoPro - DeepSeek AI Especializado',
+            'eslogan': 'Tu asistente técnico inteligente con DeepSeek AI',
             'estilo_respuesta': 'técnico_amigable',
-            'emoji_firma': '🤖🎰',
-            'saludo': '¡Hola! Soy CasinoPro, tu especialista en diagnóstico técnico. ¿En qué puedo ayudarte hoy?',
+            'emoji_firma': '🤖🧠',
+            'saludo': '¡Hola! Soy CasinoPro con tecnología DeepSeek AI, tu especialista en diagnóstico técnico. ¿En qué puedo ayudarte hoy?',
             'caracteristicas': [
+                "Tecnología DeepSeek AI integrada",
                 "25+ años de experiencia integrada",
                 "Aprendizaje automático continuo", 
                 "Especialista en Aristocrat, Bally, IGT, Konami",
@@ -418,7 +506,7 @@ class CasinoProAISystem:
         }
     
     def analizar_problema(self, pregunta_usuario, datos_maquina=None, contexto=""):
-        """Análisis inteligente con el estilo único de CasinoPro"""
+        """Análisis inteligente con DeepSeek AI y sistema local"""
         
         # Guardar en memoria de conversación
         entrada_conversacion = {
@@ -426,9 +514,65 @@ class CasinoProAISystem:
             'question': pregunta_usuario,
             'machine': datos_maquina or {},
             'context': contexto,
-            'assistant': 'CasinoPro'
+            'assistant': 'CasinoPro-DeepSeek'
         }
         self.conversation_memory.append(entrada_conversacion)
+        
+        # Preparar contexto técnico para DeepSeek
+        contexto_tecnico = self._preparar_contexto_tecnico(datos_maquina, contexto)
+        
+        # Consultar DeepSeek real
+        respuesta_ia = self.deepseek_api.consultar_deepseek(pregunta_usuario, contexto_tecnico)
+        
+        # Si DeepSeek funciona bien, usar su respuesta
+        if not any(error in respuesta_ia for error in ["❌", "⚠️", "⏰", "Error", "API Key"]):
+            respuesta_formateada = self._formatear_respuesta_deepseek(respuesta_ia)
+            return respuesta_formateada
+        
+        # Si DeepSeek falla, usar sistema local
+        return self._analizar_problema_local(pregunta_usuario, datos_maquina, contexto)
+    
+    def _preparar_contexto_tecnico(self, datos_maquina, contexto):
+        """Preparar contexto técnico para DeepSeek"""
+        contexto_tecnico = "**INFORMACIÓN TÉCNICA CASINOPRO:**\n\n"
+        
+        if datos_maquina:
+            contexto_tecnico += f"**Equipo:** {datos_maquina.get('fabricante', 'N/A')} - {datos_maquina.get('tipo', 'N/A')}\n"
+            contexto_tecnico += f"**Voltaje:** {datos_maquina.get('voltaje', 'N/A')}\n"
+            contexto_tecnico += f"**Comunicación:** {datos_maquina.get('comunicacion', 'N/A')}\n\n"
+        
+        if contexto:
+            contexto_tecnico += f"**Contexto adicional:** {contexto}\n\n"
+        
+        # Agregar conocimiento especializado
+        contexto_tecnico += "**BASE DE CONOCIMIENTO CASINOPRO:**\n"
+        for categoria, info in self.knowledge_base.items():
+            if categoria != 'nuevos_problemas' and categoria != 'soluciones_personalizadas':
+                contexto_tecnico += f"\n**{categoria.replace('_', ' ').upper()}:**\n"
+                if isinstance(info, dict):
+                    for clave, valor in info.items():
+                        if isinstance(valor, dict) and 'diagnostico' in valor:
+                            contexto_tecnico += f"- {clave}: {valor['diagnostico']}\n"
+                        else:
+                            contexto_tecnico += f"- {clave}: {valor}\n"
+        
+        return contexto_tecnico
+    
+    def _formatear_respuesta_deepseek(self, respuesta_ia):
+        """Dar formato CasinoPro a la respuesta de DeepSeek"""
+        return f"""
+        🎰 **CasinoPro - DeepSeek AI** 🧠
+        
+        {respuesta_ia}
+        
+        ---
+        *Diagnóstico generado por {self.personalidad['nombre']} v{self.version}*
+        *Tecnología DeepSeek AI - Código: {self.codigo_ia}*
+        *Sistema de aprendizaje continuo activado*
+        """
+    
+    def _analizar_problema_local(self, pregunta_usuario, datos_maquina=None, contexto=""):
+        """Sistema local de análisis (para cuando DeepSeek falla)"""
         
         # Buscar en patrones aprendidos primero
         respuesta_aprendida = self._verificar_patrones_aprendidos(pregunta_usuario)
@@ -516,7 +660,7 @@ class CasinoProAISystem:
         """Detectar tipo de problema basado en palabras clave - MEJORADA GENERAL"""
         pregunta_lower = pregunta.lower()
         
-        # DETECCIÓN DE SALUDOS Y PREGUNTAS GENERALES - NUEVO
+        # DETECCIÓN DE SALUDOS Y PREGUNTAS GENERALES
         saludos = [
             'hola', 'hola!', 'hola!', 'holaa', 'holaaa',
             'buenos días', 'buenas tardes', 'buenas noches', 
@@ -644,17 +788,17 @@ class CasinoProAISystem:
     def _generar_respuesta_casinopro(self, tipo_problema, datos_maquina, pregunta, contexto):
         """Generar respuesta con el estilo y conocimiento de CasinoPro - MEJORADA"""
         
-        # MANEJAR SALUDOS Y PREGUNTAS GENERALES - NUEVO
+        # MANEJAR SALUDOS Y PREGUNTAS GENERALES
         if tipo_problema == 'saludo':
             return f"""
-            🎰 **{self.personalidad['nombre']}** - **ASISTENTE TÉCNICO ESPECIALIZADO**
+            🎰 **{self.personalidad['nombre']}** - **DeepSeek AI** 🧠
             
-            ¡Hola! 👋 Soy {self.personalidad['nombre']}, tu especialista en diagnóstico técnico de máquinas de casino.
+            ¡Hola! 👋 Soy {self.personalidad['nombre']} con tecnología DeepSeek AI, tu especialista en diagnóstico técnico de máquinas de casino.
             
             {self.personalidad['saludo']}
             
             🚀 **Puedo ayudarte con:**
-            • Diagnóstico de problemas técnicos
+            • Diagnóstico de problemas técnicos con IA avanzada
             • Procedimientos de Vertex Controller 3.5/4.0
             • Configuración de aceptadores (MEI, JCM)
             • Problemas de comunicación y red
@@ -666,19 +810,19 @@ class CasinoProAISystem:
             • "Cómo hacer ram clear"
             • "Problema de touch en Aristocrat Helix"
             
-            ¡Contame, ¿en qué puedo asistirte hoy? 🤖🎰
+            ¡Contame, ¿en qué puedo asistirte hoy? 🤖🧠
             """
         
         elif tipo_problema == 'pregunta_general':
             return f"""
-            🎰 **{self.personalidad['nombre']}** - **SISTEMA DE ASISTENCIA TÉCNICA**
+            🎰 **{self.personalidad['nombre']}** - **DeepSeek AI** 🧠
             
             {self.personalidad['saludo']}
             
             🔧 **Mi especialidad incluye:**
             
             🎯 **Vertex Controller:**
-            • Configuración 3.5/4.0
+            • Configuración 3.5/4.0 con DeepSeek AI
             • Ram Clear y procedimientos
             • Red progresiva
             • Lightning Link
@@ -701,7 +845,7 @@ class CasinoProAISystem:
             "Problema de comunicación MDB"
             "Calibrar aceptador de billetes"
             
-            ¡Decime qué problema tenés! 🛠️🎰
+            ¡Decime qué problema tenés! 🛠️🧠
             """
         
         # Primero analizar la pregunta para determinar contexto
@@ -773,7 +917,8 @@ class CasinoProAISystem:
                 respuesta += f"\n\n📝 **ANÁLISIS DE CONTEXTO**: {contexto}"
             
             # Firma de CasinoPro
-            respuesta += f"\n\n---\n*Diagnóstico generado por {self.personalidad['nombre']} v{self.version} {self.personalidad['emoji_firma']}*"
+            respuesta += f"\n\n---\n*Diagnóstico generado por {self.personalidad['nombre']} v{self.version} - DeepSeek AI*"
+            respuesta += f"\n*Código IA: {self.codigo_ia}*"
             
             return respuesta
         
@@ -805,7 +950,8 @@ class CasinoProAISystem:
             🎓 **SISTEMA DE APRENDIZAJE ACTIVO** - Esta consulta contribuirá a mejorar diagnósticos futuros
             
             ---
-            *Análisis generado por {self.personalidad['nombre']} v{self.version} {self.personalidad['emoji_firma']}*
+            *Análisis generado por {self.personalidad['nombre']} v{self.version} - DeepSeek AI*
+            *Código IA: {self.codigo_ia}*
             """
     
     def _formatear_respuesta_aprendida(self, patron):
@@ -831,7 +977,7 @@ class CasinoProAISystem:
         🎓 **MI SISTEMA MEJORA CONTINUAMENTE** - Tu experiencia enriquece el conocimiento colectivo
         
         ---
-        *Diagnóstico aprendido por {self.personalidad['nombre']} v{self.version} {self.personalidad['emoji_firma']}*
+        *Diagnóstico aprendido por {self.personalidad['nombre']} v{self.version} - DeepSeek AI*
         """
     
     def obtener_estadisticas(self):
@@ -852,19 +998,23 @@ class CasinoProAISystem:
             'confianza_promedio': confianza_promedio,
             'ultimo_aprendizaje': self.conversation_memory[-1]['timestamp'] if self.conversation_memory else 'Nunca',
             'version': self.version,
-            'nombre': self.nombre
+            'nombre': self.nombre,
+            'ia_modelo': self.ia_modelo,
+            'codigo_ia': self.codigo_ia
         }
     
     def obtener_info_sistema(self):
         """Obtener información del sistema CasinoPro"""
         return {
             'nombre': self.personalidad['nombre'],
+            'ia_modelo': self.personalidad['ia_modelo'],
             'version': self.version,
             'titulo': self.personalidad['titulo'],
             'eslogan': self.personalidad['eslogan'],
             'caracteristicas': self.personalidad['caracteristicas'],
             'emoji_firma': self.personalidad['emoji_firma'],
-            'saludo': self.personalidad['saludo']
+            'saludo': self.personalidad['saludo'],
+            'codigo_ia': self.codigo_ia
         }
 
 # ==================== SISTEMA DE DIAGNÓSTICO CON CASINOPRO AI ====================
@@ -878,14 +1028,14 @@ class DiagnosticSystemWithCasinoPro:
         
         datos_maquina = self.db.aceptadores.get(aceptador_seleccionado, {}) if aceptador_seleccionado != "No específico" else {}
         
-        # Obtener análisis de CasinoPro AI
+        # Obtener análisis de CasinoPro AI - CORREGIDO: No forzar enfoque en aceptador
         respuesta_experta = self.casinopro_ai.analizar_problema(pregunta, datos_maquina, contexto_adicional)
         
         respuesta = {
             'aceptador': aceptador_seleccionado,
             'pregunta': pregunta,
             'analisis_experto': respuesta_experta,
-            'nivel_confianza': "🎰 ALTA - CasinoPro AI Especializado",
+            'nivel_confianza': "🧠 ALTA - DeepSeek AI Especializado",
             'prioridad_recomendada': self._obtener_prioridad(pregunta),
             'datos_maquina': datos_maquina,
             'sistema_ai': self.casinopro_ai
@@ -985,7 +1135,7 @@ class CasinoProCompleteDB:
             "WMS Bluebird 2": {"fabricante": "WMS", "año": 2020}
         }
 
-        # COMPONENTES VERTEX
+        # NUEVO: COMPONENTES VERTEX
         self.componentes_vertex = {
             "Aristocrat Media Player (AMP)": {"tipo": "Reproductor Multimedia", "conexion": "HDMI"},
             "Splitter HDMI 8 salidas": {"tipo": "Distribuidor Video", "conexion": "HDMI"},
@@ -1022,10 +1172,12 @@ def main():
         saludo = '¡Hola! Soy CasinoPro, tu especialista en diagnóstico técnico. ¿En qué puedo ayudarte hoy?'
         info_casinopro = {
             'nombre': 'CasinoPro',
-            'version': '2.2',
-            'titulo': '🎰 CasinoPro - Sistema Inteligente Especializado',
-            'eslogan': 'Tu asistente técnico inteligente para máquinas de casino',
-            'emoji_firma': '🤖🎰'
+            'ia_modelo': 'DeepSeek AI',
+            'version': '2.3',
+            'titulo': '🎰 CasinoPro - DeepSeek AI Especializado',
+            'eslogan': 'Tu asistente técnico inteligente con DeepSeek AI',
+            'emoji_firma': '🤖🧠',
+            'codigo_ia': 'DEEPSEEK-CP-VTX-8876'
         }
     
     st.title(info_casinopro['titulo'])
@@ -1034,6 +1186,9 @@ def main():
     # Sidebar con información del sistema
     with st.sidebar:
         st.header(f"🎰 {info_casinopro['nombre']} AI")
+        st.markdown(f"**🤖 IA:** {info_casinopro['ia_modelo']}")
+        st.markdown(f"**🚀 Versión:** {info_casinopro['version']}")
+        st.markdown(f"**🔧 Código:** {info_casinopro['codigo_ia']}")
         
         try:
             stats = st.session_state.diagnostic_system.casinopro_ai.obtener_estadisticas()
@@ -1043,17 +1198,18 @@ def main():
             st.metric("⭐ Feedback Recibido", stats['total_feedback'])
             st.metric("🎓 Confianza Promedio", f"{stats['confianza_promedio']*100:.1f}%")
             
-            st.info(f"🔄 **v{stats['version']}** - Último aprendizaje: {stats['ultimo_aprendizaje'][:16]}")
+            st.info(f"🔄 **v{stats['version']}** - {stats['ia_modelo']} - Último aprendizaje: {stats['ultimo_aprendizaje'][:16]}")
         except:
             st.metric("📚 Patrones Aprendidos", 0)
             st.metric("💬 Consultas Totales", 0)
             st.metric("⭐ Feedback Recibido", 0)
             st.metric("🎓 Confianza Promedio", "0%")
-            st.info("🔄 **v2.2** - Sistema iniciando...")
+            st.info("🔄 **v2.3** - DeepSeek AI - Sistema iniciando...")
         
         st.markdown("---")
         st.subheader("🚀 Características")
         caracteristicas = [
+            "Tecnología DeepSeek AI integrada",
             "25+ años de experiencia integrada",
             "Aprendizaje automático continuo", 
             "Especialista en Aristocrat, Bally, IGT, Konami",
@@ -1103,14 +1259,15 @@ def main():
     
     # ==================== INTERFAZ DE CHAT ====================
     if st.session_state.current_menu == "💬 CHAT CASINOPRO":
-        st.header("💬 Chat con CasinoPro AI")
+        st.header("💬 Chat con CasinoPro DeepSeek AI")
         
         st.success("""
-        **🎰 CHAT INTELIGENTE CON CASINOPRO**
-        - Conversación natural como esta que estamos teniendo
-        - Diagnósticos en tiempo real
-        - Aprendizaje continuo de cada consulta
+        **🧠 CHAT CON DEEPSEEK AI**
+        - Inteligencia artificial real integrada
+        - Diagnósticos técnicos avanzados
+        - Respuestas contextuales y naturales
         - Especialidad en Vertex Controller
+        - Sistema híbrido inteligente
         """)
         
         # Área del chat
@@ -1154,8 +1311,8 @@ def main():
             }
             st.session_state.chat_history.append(user_message)
             
-            # Obtener respuesta de CasinoPro
-            with st.spinner("🔍 CasinoPro está analizando..."):
+            # Obtener respuesta de CasinoPro con DeepSeek
+            with st.spinner("🧠 DeepSeek AI analizando..."):
                 try:
                     respuesta = st.session_state.diagnostic_system.obtener_diagnostico_mejorado(
                         user_input,
@@ -1220,15 +1377,16 @@ def main():
                 })
                 st.rerun()
     
-    # ==================== DIAGNÓSTICO AVANZADO ====================
+    # ==================== DIAGNÓSTICO AVANZADO (MANTENIDO) ====================
     elif st.session_state.current_menu == "🤖 DIAGNÓSTICO AVANZADO":
-        st.header("🤖 Diagnóstico Avanzado con CasinoPro")
+        st.header("🤖 Diagnóstico Avanzado con CasinoPro DeepSeek")
         
         st.info("""
         **🔧 MODO DIAGNÓSTICO AVANZADO**
         - Selección específica de equipos
         - Configuración detallada
-        - Análisis técnico profundo
+        - Análisis técnico profundo con DeepSeek AI
+        - Sistema híbrido inteligente
         """)
         
         # Selección de aceptador (ahora opcional)
@@ -1294,12 +1452,12 @@ def main():
         col1, col2 = st.columns([3, 1])
         
         with col1:
-            if st.button("🎰🔧 EJECUTAR DIAGNÓSTICO CASINOPRO", type="primary", use_container_width=True):
+            if st.button("🎰🔧 EJECUTAR DIAGNÓSTICO DEEPSEEK AI", type="primary", use_container_width=True):
                 if pregunta_usuario.strip():
                     st.session_state.last_question = pregunta_usuario
                     st.session_state.show_feedback = False
                     
-                    with st.spinner("🔍 CasinoPro AI analizando + aprendiendo..."):
+                    with st.spinner("🧠 DeepSeek AI analizando + aprendiendo..."):
                         import time
                         time.sleep(1)
                         
@@ -1318,7 +1476,7 @@ def main():
                             
                             # Mostrar resultados
                             st.markdown("---")
-                            st.subheader("🎯 **Resultados del Diagnóstico CasinoPro**")
+                            st.subheader("🎯 **Resultados del Diagnóstico CasinoPro DeepSeek**")
                             
                             # Información básica
                             col1, col2 = st.columns(2)
@@ -1334,7 +1492,7 @@ def main():
                                 st.write(f"**📋 Prioridad:** {respuesta['prioridad_recomendada']}")
                             
                             # Análisis de CasinoPro AI
-                            st.markdown("### 🎰 **Análisis de CasinoPro AI**")
+                            st.markdown("### 🧠 **Análisis de DeepSeek AI**")
                             st.info(respuesta['analisis_experto'])
                             
                             # Timestamp
@@ -1404,7 +1562,7 @@ def main():
     
     # ==================== ESTADÍSTICAS DE CASINOPRO AI ====================
     elif st.session_state.current_menu == "📊 ESTADÍSTICAS AI":
-        st.header("📊 Estadísticas de CasinoPro AI")
+        st.header("📊 Estadísticas de CasinoPro DeepSeek AI")
         
         try:
             casino_pro = st.session_state.diagnostic_system.casinopro_ai
@@ -1414,6 +1572,7 @@ def main():
             # Encabezado del sistema
             st.subheader(f"🎰 {info['nombre']} v{stats['version']}")
             st.write(f"**{info['eslogan']}**")
+            st.write(f"**🤖 IA:** {stats['ia_modelo']} | **🔧 Código:** {stats['codigo_ia']}")
             
             # Métricas principales
             col1, col2, col3, col4 = st.columns(4)
@@ -1437,6 +1596,7 @@ def main():
                 st.write(f"• **Último aprendizaje**: {stats['ultimo_aprendizaje']}")
                 st.write(f"• **Tasa de aprendizaje activo**: {stats['confianza_promedio']*100:.1f}%")
                 st.write(f"• **Efectividad general**: {(stats['confianza_promedio']*100 - 10):.1f}%")
+                st.write(f"• **Tecnología IA**: {stats['ia_modelo']}")
                 
             with col2:
                 st.markdown("**🎯 Capacidades del Sistema**")
@@ -1513,7 +1673,7 @@ def main():
         - **VERTEX CONTROLLERS INCLUIDOS** ✅
         """)
         
-        # Mostrar máquinas disponibles
+        # Mostrar máquinas disponibles - AHORA CON 26+ MÁQUINAS
         st.subheader(f"📊 Total de máquinas en base de datos: {len(st.session_state.db.maquinas)}")
         
         # Agrupar por fabricante
