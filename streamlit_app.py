@@ -289,19 +289,130 @@ class CasinoProCompleteDB:
                 "documentacion_verificada": True,
                 "voltaje": "+24V DC ±15% (REAL)",
                 "comunicacion": "MDB, ICP, RS-232 (REAL)"
+            },
+            "MEI CashFlow 7000": {
+                "fabricante": "Crane Payment Innovations", 
+                "tipo": "Aceptador Inteligente",
+                "documentacion_verificada": True,
+                "voltaje": "+24V DC ±5%",
+                "comunicacion": "MDB, Ethernet, USB"
             }
         }
         
+        # BASE DE MÁQUINAS COMPLETA Y ACTUALIZADA (22+ MÁQUINAS)
         self.maquinas = {
+            # ========== ARISTOCRAT MODERNA ==========
             "Aristocrat Helix": {"fabricante": "Aristocrat", "año": 2022, "plataforma": "Helix Core"},
+            "Aristocrat Oasis": {"fabricante": "Aristocrat", "año": 2021, "plataforma": "Oasis"},
+            "Aristocrat Edge X": {"fabricante": "Aristocrat", "año": 2023, "plataforma": "Edge"},
+            "Aristocrat MK6": {"fabricante": "Aristocrat", "año": 2008, "plataforma": "Legacy"},
+            
+            # ========== BALLY/SCIENTIFIC GAMES ==========
             "Bally Alpha Pro": {"fabricante": "Bally/SG", "año": 2022, "plataforma": "PC Industrial"},
-            "Konami Concerto": {"fabricante": "Konami", "año": 2022, "plataforma": "Concerto"}
+            "Bally Alpha 2": {"fabricante": "Bally/SG", "año": 2021, "plataforma": "Alpha Series"},
+            "Bally iVIEW DM": {"fabricante": "Bally/SG", "año": 2023, "plataforma": "Display Manager"},
+            "Bally Pro Wave": {"fabricante": "Bally", "año": 2018, "plataforma": "Pro Series"},
+            
+            # ========== KONAMI ==========
+            "Konami Concerto": {"fabricante": "Konami", "año": 2022, "plataforma": "Concerto"},
+            "Konami KX": {"fabricante": "Konami", "año": 2023, "plataforma": "KX Platform"},
+            "Konami Helix Core": {"fabricante": "Konami", "año": 2022, "plataforma": "Helix"},
+            
+            # ========== IGT ==========
+            "IGT Peak": {"fabricante": "IGT", "año": 2023, "plataforma": "Peak Cabinet"},
+            "IGT S Plus": {"fabricante": "IGT", "año": 2022, "plataforma": "S Series"},
+            "IGT S2000": {"fabricante": "IGT", "año": 2010, "plataforma": "Legacy"},
+            "IGT PeakSlant 49": {"fabricante": "IGT", "año": 2023, "plataforma": "Peak"},
+            "IGT Game King": {"fabricante": "IGT", "año": 2015, "plataforma": "Video Poker"},
+            
+            # ========== EVERI ==========
+            "Everi CineVision": {"fabricante": "Everi", "año": 2022, "plataforma": "Multimedia"},
+            "Everi Forte": {"fabricante": "Everi", "año": 2023, "plataforma": "Forte"},
+            
+            # ========== NOVOMATIC ==========
+            "Novomatic Axxis": {"fabricante": "Novomatic", "año": 2022, "plataforma": "Axxis"},
+            "Novomatic Cineplex": {"fabricante": "Novomatic", "año": 2023, "plataforma": "Multipantalla"},
+            
+            # ========== LIGHT & WONDER ==========
+            "Light & Wonder Omega": {"fabricante": "L&W", "año": 2023, "plataforma": "Omega"},
+            
+            # ========== MÁQUINAS CLÁSICAS ==========
+            "Aristocrat Origen": {"fabricante": "Aristocrat", "año": 2019, "plataforma": "Origen"},
+            
+            # 🆕 AGREGAR MÁQUINAS CON CPU-4.2.2.X
+            "Scientific Games Twinstar Vertical": {
+                "fabricante": "Scientific Games", 
+                "año": 2017,
+                "plataforma": "CPU-4.2.2.X",
+                "cpu_especifica": True,
+                "numero_parte": "56-T14335T",
+                "modelo_cpu": "CPU-4.2.2.X (1458954)"
+            },
+            
+            "Scientific Games CPU-4.2.2.X Standalone": {
+                "fabricante": "Scientific Games", 
+                "año": 2017,
+                "plataforma": "CPU-4.2.2.X", 
+                "cpu_especifica": True,
+                "numero_parte": "1458954"
+            },
+            
+            "Bally Alpha Pro con CPU-4.2.2.X": {
+                "fabricante": "Bally/Scientific Games",
+                "año": 2017,
+                "plataforma": "CPU-4.2.2.X",
+                "cpu_especifica": True,
+                "compatible": True
+            },
+            
+            "Bally iVIEW DM con CPU-4.2.2.X": {
+                "fabricante": "Bally/Scientific Games", 
+                "año": 2017,
+                "plataforma": "CPU-4.2.2.X",
+                "cpu_especifica": True,
+                "compatible": True
+            }
         }
         
+        # INVENTARIO AMPLIADO
         self.inventario = [
+            # Fuentes de Poder
             {"nombre": "🔌 Fuente IGT S2000", "stock": 3, "categoria": "Fuentes", "min_stock": 2},
+            {"nombre": "🔌 Fuente Aristocrat Helix", "stock": 5, "categoria": "Fuentes", "min_stock": 3},
+            {"nombre": "🔌 Fuente Bally Alpha Pro", "stock": 4, "categoria": "Fuentes", "min_stock": 2},
+            {"nombre": "🔌 Fuente Konami Concerto", "stock": 3, "categoria": "Fuentes", "min_stock": 2},
+            
+            # Aceptadores
             {"nombre": "💰 Aceptador MEI SCN66", "stock": 5, "categoria": "Aceptadores", "min_stock": 3},
-            {"nombre": "📺 Pantalla Touch 19\" Aristocrat", "stock": 2, "categoria": "Pantallas", "min_stock": 1}
+            {"nombre": "💰 Aceptador JCM UBA-10", "stock": 6, "categoria": "Aceptadores", "min_stock": 4},
+            {"nombre": "💰 Aceptador MEI CashFlow", "stock": 4, "categoria": "Aceptadores", "min_stock": 2},
+            
+            # Pantallas
+            {"nombre": "📺 Pantalla Touch 19\" Aristocrat", "stock": 2, "categoria": "Pantallas", "min_stock": 1},
+            {"nombre": "📺 Pantalla 32\" Bally Alpha", "stock": 3, "categoria": "Pantallas", "min_stock": 2},
+            {"nombre": "📺 Pantalla Curva Konami", "stock": 2, "categoria": "Pantallas", "min_stock": 1},
+            
+            # Componentes Electrónicos
+            {"nombre": "💾 MPU IGT S2000", "stock": 2, "categoria": "Electrónicos", "min_stock": 1},
+            {"nombre": "💾 System Board Helix", "stock": 3, "categoria": "Electrónicos", "min_stock": 2},
+            {"nombre": "💾 Placa Video Alpha Pro", "stock": 2, "categoria": "Electrónicos", "min_stock": 1},
+            
+            # Cables y Conectores
+            {"nombre": "🔗 Cable LVDS 40-pin", "stock": 10, "categoria": "Cables", "min_stock": 5},
+            {"nombre": "🔗 Cable MDB 16-pin", "stock": 15, "categoria": "Cables", "min_stock": 8},
+            {"nombre": "🔗 Cable Ethernet Cat6", "stock": 20, "categoria": "Cables", "min_stock": 10},
+            
+            # Herramientas
+            {"nombre": "🛠️ Kit Calibración Touch", "stock": 2, "categoria": "Herramientas", "min_stock": 1},
+            {"nombre": "🛠️ Software Diagnóstico", "stock": 1, "categoria": "Herramientas", "min_stock": 1},
+            
+            # 🆕 AGREGAR NUEVOS COMPONENTES CPU-4.2.2.X
+            {"nombre": "🔋 CPU-4.2.2.X Assembly", "stock": 2, "categoria": "CPU", "min_stock": 1},
+            {"nombre": "🔋 Módulo BIOS CPU-4.2.2.X", "stock": 3, "categoria": "CPU", "min_stock": 2},
+            {"nombre": "🔋 Batería CR2032", "stock": 10, "categoria": "Baterías", "min_stock": 5},
+            {"nombre": "🔋 Baterías Litio AA", "stock": 8, "categoria": "Baterías", "min_stock": 4},
+            {"nombre": "🔋 SSD 64GB SATA CPU-4.2.2.X", "stock": 3, "categoria": "Almacenamiento", "min_stock": 2},
+            {"nombre": "🔋 Placa Posterior CPU-4.2.2.X", "stock": 2, "categoria": "CPU", "min_stock": 1}
         ]
 
 # ==================== SISTEMA DE DIAGNÓSTICO ====================
@@ -368,13 +479,18 @@ class TechnicalExperienceSystem:
             'bally_alpha_pro': [
                 "🎯 **Arquitectura conocida**: Alpha Pro = PC industrial - Diagnosticar como computadora",
                 "💡 **Truco BIOS**: F2 durante boot para diagnóstico hardware integrado"
+            ],
+            'konami_concerto': [
+                "🎯 **Conocimiento técnico**: Concerto - Pantalla curva necesita calibración especial",
+                "💡 **Procedimiento exclusivo**: Usar Konami Service Tool para calibración precisa"
             ]
         }
     
     def get_technical_insight(self, sintoma, modelo=None):
         return [
             "🔍 **Perspectiva técnica**: Problema común - Revisar conexiones primero",
-            "💡 **Enfoque sugerido**: Diagnosticar sistemáticamente de simple a complejo"
+            "💡 **Enfoque sugerido**: Diagnosticar sistemáticamente de simple a complejo",
+            "🎯 **Prioridad**: Comenzar por lo que falla más frecuentemente según estadísticas"
         ]
 
 # ==================== SISTEMA DE DIAGNÓSTICO MEJORADO ====================
@@ -489,6 +605,16 @@ def main():
         
         st.success(t('success_system', lang))
         
+        # Estadísticas de máquinas por fabricante
+        st.subheader("📊 Distribución de Máquinas por Fabricante")
+        fabricantes = {}
+        for maquina, info in st.session_state.db.maquinas.items():
+            fabricante = info['fabricante']
+            fabricantes[fabricante] = fabricantes.get(fabricante, 0) + 1
+        
+        for fabricante, cantidad in fabricantes.items():
+            st.write(f"• **{fabricante}**: {cantidad} máquinas")
+        
         # Accesos rápidos
         st.subheader("🚀 Accesos Rápidos")
         cols = st.columns(3)
@@ -523,6 +649,8 @@ def main():
             - ¿Problemas de touch screen en Aristocrat Helix?
             - ¿Cómo soluciono comunicación Ethernet en Bally Alpha Pro?
             - ¿Error de calibración en Konami Concerto?
+            - ¿Problemas de audio surround en máquinas nuevas?
+            - ¿Configuración de red para aceptadores inteligentes?
             """)
         
         pregunta_usuario = st.text_area(
@@ -654,6 +782,10 @@ def main():
                 st.markdown("### 🌡️ Condiciones Operativas")
                 st.write(f"**Temperatura:** {especificaciones['temperatura_operacion']}")
                 st.write(f"**Humedad Máx:** {especificaciones['humedad_maxima']}")
+            
+            st.markdown("### 🎰 Máquinas Compatibles")
+            for maquina in especificaciones['maquinas_compatibles']:
+                st.write(f"• {maquina}")
         
         with tab3:
             st.subheader(t('cpu_error_codes', lang))
@@ -741,26 +873,45 @@ def main():
     elif st.session_state.current_menu == t('menu_machines', lang):
         st.header("🎰 Máquinas en Base de Datos")
         
+        # Filtros por fabricante
+        fabricantes = list(set([info['fabricante'] for info in st.session_state.db.maquinas.values()]))
+        fabricante_seleccionado = st.selectbox("🔍 Filtrar por fabricante:", ["Todos"] + fabricantes)
+        
+        # Contadores
         total_maquinas = len(st.session_state.db.maquinas)
         st.metric("📊 Total de Máquinas Registradas", total_maquinas)
         
+        # Mostrar máquinas filtradas
         for modelo, info in st.session_state.db.maquinas.items():
-            with st.expander(f"🎰 {modelo}"):
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    st.write(f"**Fabricante:** {info['fabricante']}")
-                with col2:
-                    st.write(f"**Año:** {info['año']}")
-                with col3:
-                    st.write(f"**Plataforma:** {info.get('plataforma', 'N/A')}")
+            if fabricante_seleccionado == "Todos" or info['fabricante'] == fabricante_seleccionado:
+                with st.expander(f"🎰 {modelo}"):
+                    col1, col2, col3 = st.columns(3)
+                    with col1:
+                        st.write(f"**Fabricante:** {info['fabricante']}")
+                    with col2:
+                        st.write(f"**Año:** {info['año']}")
+                    with col3:
+                        st.write(f"**Plataforma:** {info.get('plataforma', 'N/A')}")
+                    
+                    # Información adicional para máquinas con CPU específica
+                    if info.get('cpu_especifica'):
+                        st.info("🔋 **Esta máquina usa CPU-4.2.2.X**")
+                        if 'numero_parte' in info:
+                            st.write(f"**Número de Parte:** {info['numero_parte']}")
     
     # ==================== INVENTARIO COMPLETO ====================
     elif st.session_state.current_menu == t('menu_inventory', lang):
         st.header("📦 Inventario")
         
+        # Filtros por categoría
+        categorias = list(set([item['categoria'] for item in st.session_state.db.inventario]))
+        categoria_seleccionada = st.selectbox("🔍 Filtrar por categoría:", ["Todas"] + categorias)
+        
+        # Mostrar inventario filtrado
         for item in st.session_state.db.inventario:
-            stock_color = "🟢" if item['stock'] > item.get('min_stock', 0) else "🔴"
-            st.write(f"{stock_color} **{item['nombre']}** - Stock: {item['stock']} | Mín: {item.get('min_stock', 'N/A')}")
+            if categoria_seleccionada == "Todas" or item['categoria'] == categoria_seleccionada:
+                stock_color = "🟢" if item['stock'] > item.get('min_stock', 0) else "🔴"
+                st.write(f"{stock_color} **{item['nombre']}** - Stock: {item['stock']} | Mín: {item.get('min_stock', 'N/A')}")
     
     # ==================== OTRAS SECCIONES (Placeholders) ====================
     elif st.session_state.current_menu == t('menu_knowledge', lang):
