@@ -156,6 +156,48 @@ class CasinoProAISystem:
                     'confidence': 0.92,
                     'usage_count': 0,
                     'success_rate': 0.82
+                },
+                'error_sistema': {
+                    'diagnostico': "Error de software o configuración del sistema",
+                    'pasos': [
+                        "1. 💻 Revisar códigos de error en display",
+                        "2. 🔄 Realizar reset de fábrica controlado",
+                        "3. 📀 Verificar integridad del software",
+                        "4. ⚙️ Restaurar configuración de respaldo",
+                        "5. 🔧 Actualizar firmware a última versión"
+                    ],
+                    'prioridad': "🔴 ALTA",
+                    'confidence': 0.85,
+                    'usage_count': 0,
+                    'success_rate': 0.70
+                },
+                'problema_audio': {
+                    'diagnostico': "Falla en sistema de audio o altavoces",
+                    'pasos': [
+                        "1. 🔊 Verificar configuración de volumen en software",
+                        "2. 🔌 Revisar conexiones de cables de audio",
+                        "3. 🎵 Probar con diferentes archivos de sonido",
+                        "4. 🔧 Verificar estado de altavoces individualmente",
+                        "5. 💻 Reinstalar controladores de audio"
+                    ],
+                    'prioridad': "🟡 MEDIA",
+                    'confidence': 0.83,
+                    'usage_count': 0,
+                    'success_rate': 0.75
+                },
+                'problema_red': {
+                    'diagnostico': "Falla en conectividad de red",
+                    'pasos': [
+                        "1. 🌐 Verificar conexión Ethernet/Wi-Fi",
+                        "2. 🔌 Revisar cableado de red y LEDs",
+                        "3. ⚙️ Comprobar configuración IP y DNS",
+                        "4. 🔄 Reiniciar router y switch",
+                        "5. 💻 Verificar firewall y configuraciones de red"
+                    ],
+                    'prioridad': "🔴 ALTA",
+                    'confidence': 0.88,
+                    'usage_count': 0,
+                    'success_rate': 0.80
                 }
             },
             'fabricantes_especificos': {
@@ -163,38 +205,48 @@ class CasinoProAISystem:
                     'helix': "Reset completo: Desconectar 10min + POWER + SERVICE simultáneo",
                     'oasis': "Limpieza mensual de ventiladores - Tiende a sobrecalentar",
                     'edge': "Recalibrar touch con herramienta Edge específica",
-                    'mk6': "Verificar versión de firmware - Actualizar si es necesario"
+                    'mk6': "Verificar versión de firmware - Actualizar si es necesario",
+                    'general': "Problemas comunes: sobrecalentamiento y touch"
                 },
                 'bally': {
                     'alpha_pro': "F2 durante boot para diagnóstico hardware integrado",
                     'alpha_2': "Problemas térmicos comunes - Instalar ventilador adicional",
                     'iview': "90% problemas de display = cable flat dañado o suelto",
-                    'pro_wave': "Verificar conexiones de audio surround"
+                    'pro_wave': "Verificar conexiones de audio surround",
+                    'general': "Problemas comunes: display y comunicación"
                 },
                 'igt': {
                     'peak': "CPU sobrecalienta en verano - Ventilador adicional recomendado",
                     's_plus': "Usar únicamente fuentes certificadas IGT",
                     's2000': "Problemas comunes en placa MPU - Verificar condensadores",
-                    'game_king': "Reset de fábrica soluciona 70% problemas de software"
+                    'game_king': "Reset de fábrica soluciona 70% problemas de software",
+                    'general': "Problemas comunes: fuente de poder y software"
                 },
                 'konami': {
                     'concerto': "Pantalla curva necesita calibración especializada",
                     'kx': "Verificar voltajes +5V y +12V regularmente", 
-                    'helix_core': "Reset mensual preventivo recomendado"
+                    'helix_core': "Reset mensual preventivo recomendado",
+                    'general': "Problemas comunes: voltaje y calibración"
+                },
+                'general': {
+                    'aceptadores': "Los aceptadores suelen fallar por suciedad en sensores",
+                    'fuente_poder': "Verificar siempre voltajes de salida primero",
+                    'pantallas': "90% problemas de pantalla son por cables flat",
+                    'comunicacion': "Revisar configuración MDB/RS-232 siempre"
                 }
             },
             'nuevos_problemas': {},
             'soluciones_personalizadas': {}
         }
     
-    def analizar_problema(self, pregunta_usuario, datos_maquina, contexto=""):
+    def analizar_problema(self, pregunta_usuario, datos_maquina=None, contexto=""):
         """Análisis inteligente con el estilo único de CasinoPro"""
         
         # Guardar en memoria de conversación
         entrada_conversacion = {
             'timestamp': datetime.now().isoformat(),
             'question': pregunta_usuario,
-            'machine': datos_maquina,
+            'machine': datos_maquina or {},
             'context': contexto,
             'assistant': 'CasinoPro'
         }
@@ -238,7 +290,7 @@ class CasinoProAISystem:
             self.learned_patterns[pregunta_hash] = {
                 'question_pattern': pregunta.lower(),
                 'problem_type': tipo_problema,
-                'machine_type': datos_maquina.get('fabricante', ''),
+                'machine_type': datos_maquina.get('fabricante', '') if datos_maquina else '',
                 'first_seen': datetime.now().isoformat(),
                 'usage_count': 1,
                 'confidence': 0.70,
@@ -277,7 +329,7 @@ class CasinoProAISystem:
                 self.learned_patterns[pregunta_hash]['confidence'] = min(0.98, self.learned_patterns[pregunta_hash]['confidence'] + 0.05)
             else:
                 self.learned_patterns[pregunta_hash]['failure_count'] += 1
-                self.learned_patterns[pregunta_hash]['confidence'] = max(0.30, self.learned_patterns[pregunta_hash]['confidence'] - 0.10)
+                self.learned_patterns[preganta_hash]['confidence'] = max(0.30, self.learned_patterns[pregunta_hash]['confidence'] - 0.10)
         
         self.save_learned_data()
         return True
@@ -286,23 +338,37 @@ class CasinoProAISystem:
         """Detectar tipo de problema basado en palabras clave"""
         pregunta_lower = pregunta.lower()
         
-        if any(palabra in pregunta_lower for palabra in ['no enciende', 'apagado', 'sin luz', 'no prende', 'no arranca']):
+        # Detección mejorada de problemas
+        if any(palabra in pregunta_lower for palabra in ['no enciende', 'apagado', 'sin luz', 'no prende', 'no arranca', 'no power']):
             return 'no_enciende'
-        elif any(palabra in pregunta_lower for palabra in ['comunicación', 'mdb', 'rs232', 'no comunica', 'protocolo', 'sas']):
+        elif any(palabra in pregunta_lower for palabra in ['comunicación', 'mdb', 'rs232', 'no comunica', 'protocolo', 'sas', 'network']):
             return 'comunicacion_falla'
-        elif any(palabra in pregunta_lower for palabra in ['touch', 'pantalla', 'calibración', 'toque', 'no responde', 'táctil']):
+        elif any(palabra in pregunta_lower for palabra in ['touch', 'pantalla', 'calibración', 'toque', 'no responde', 'táctil', 'display']):
             return 'touch_no_responde'
-        elif any(palabra in pregunta_lower for palabra in ['rechaza', 'billete', 'no acepta', 'efectivo', 'aceptador', 'validator']):
+        elif any(palabra in pregunta_lower for palabra in ['rechaza', 'billete', 'no acepta', 'efectivo', 'aceptador', 'validator', 'bill']):
             return 'rechaza_billetes'
-        elif any(palabra in pregunta_lower for palabra in ['calor', 'sobrecalienta', 'temperatura', 'caliente', 'ventilador', 'therm']):
+        elif any(palabra in pregunta_lower for palabra in ['calor', 'sobrecalienta', 'temperatura', 'caliente', 'ventilador', 'therm', 'hot']):
             return 'sobrecalentamiento'
-        elif any(palabra in pregunta_lower for palabra in ['error', 'código', 'led', 'falla', 'bios', 'post']):
+        elif any(palabra in pregunta_lower for palabra in ['error', 'código', 'led', 'falla', 'bios', 'post', 'boot']):
             return 'error_sistema'
+        elif any(palabra in pregunta_lower for palabra in ['sonido', 'audio', 'altavoz', 'speaker', 'mute', 'silenci']):
+            return 'problema_audio'
+        elif any(palabra in pregunta_lower for palabra in ['red', 'network', 'internet', 'wifi', 'ethernet', 'conexión']):
+            return 'problema_red'
+        elif any(palabra in pregunta_lower for palabra in ['jackpot', 'premio', 'pago', 'pay', 'winner']):
+            return 'problema_pagos'
+        elif any(palabra in pregunta_lower for palabra in ['botón', 'button', 'tecla', 'key', 'switch']):
+            return 'problema_botones'
         else:
             return 'general'
     
     def _generar_respuesta_casinopro(self, tipo_problema, datos_maquina, pregunta, contexto):
         """Generar respuesta con el estilo y conocimiento de CasinoPro"""
+        
+        # Primero analizar la pregunta para determinar si es sobre aceptador o máquina completa
+        es_sobre_aceptador = any(palabra in pregunta.lower() for palabra in [
+            'aceptador', 'validator', 'billete', 'bill', 'efectivo', 'cash', 'scn', 'uba'
+        ])
         
         if tipo_problema in self.knowledge_base['problemas_comunes']:
             problema = self.knowledge_base['problemas_comunes'][tipo_problema]
@@ -324,8 +390,8 @@ class CasinoProAISystem:
             for paso in problema['pasos']:
                 respuesta += f"\n{paso}"
             
-            # Agregar conocimiento específico del fabricante
-            if datos_maquina:
+            # Agregar conocimiento específico solo si es relevante
+            if datos_maquina and es_sobre_aceptador:
                 fabricante = datos_maquina.get('fabricante', '').lower()
                 for fab_key, fab_data in self.knowledge_base['fabricantes_especificos'].items():
                     if fab_key in fabricante:
@@ -333,6 +399,13 @@ class CasinoProAISystem:
                         for modelo, consejo in fab_data.items():
                             if any(palabra in pregunta.lower() for palabra in [modelo, fab_key]):
                                 respuesta += f"\n• **{modelo.replace('_', ' ').title()}**: {consejo}"
+            
+            # Agregar conocimiento general si no es específico de aceptador
+            if not es_sobre_aceptador:
+                respuesta += f"\n\n💡 **CONOCIMIENTO GENERAL MÁQUINAS CASINO**:"
+                conocimiento_general = self.knowledge_base['fabricantes_especificos']['general']
+                for area, consejo in conocimiento_general.items():
+                    respuesta += f"\n• **{area.replace('_', ' ').title()}**: {consejo}"
             
             # Contexto adicional personalizado
             if contexto:
@@ -443,7 +516,7 @@ class DiagnosticSystemWithCasinoPro:
         
         datos_maquina = self.db.aceptadores.get(aceptador_seleccionado, {})
         
-        # Obtener análisis de CasinoPro AI
+        # Obtener análisis de CasinoPro AI - CORREGIDO: No forzar enfoque en aceptador
         respuesta_experta = self.casinopro_ai.analizar_problema(pregunta, datos_maquina, contexto_adicional)
         
         respuesta = {
@@ -576,16 +649,26 @@ def main():
         - Análisis contextual inteligente
         """)
         
-        # Selección de aceptador
-        aceptador_seleccionado = st.selectbox(
-            "🔧 **SELECCIONÁ EL ACEPTADOR:**",
-            list(st.session_state.db.aceptadores.keys())
-        )
+        # Selección de aceptador (ahora opcional)
+        col1, col2 = st.columns(2)
         
-        # Información de la máquina seleccionada
-        if aceptador_seleccionado:
+        with col1:
+            aceptador_seleccionado = st.selectbox(
+                "🔧 **SELECCIONÁ EL ACEPTADOR (Opcional):**",
+                ["No específico"] + list(st.session_state.db.aceptadores.keys())
+            )
+        
+        with col2:
+            # Nueva selección de tipo de máquina
+            tipo_consulta = st.selectbox(
+                "🎯 **TIPO DE CONSULTA:**",
+                ["Problema general", "Aceptador específico", "Máquina completa", "Software/Sistema"]
+            )
+        
+        # Información de la máquina seleccionada solo si es relevante
+        if aceptador_seleccionado != "No específico":
             info_maquina = st.session_state.db.aceptadores[aceptador_seleccionado]
-            with st.expander("📋 Información de la máquina seleccionada"):
+            with st.expander("📋 Información del equipo seleccionado"):
                 st.write(f"**Fabricante**: {info_maquina['fabricante']}")
                 st.write(f"**Tipo**: {info_maquina['tipo']}")
                 st.write(f"**Voltaje**: {info_maquina['voltaje']}")
@@ -597,14 +680,14 @@ def main():
         
         pregunta_usuario = st.text_area(
             "**Describí el problema técnico:**",
-            placeholder="Ej: Mi Aristocrat Helix no enciende después de una tormenta...",
+            placeholder="Ej: Mi Aristocrat Helix no enciende después de una tormenta, la pantalla se queda negra y no responde a ningún botón...",
             height=120,
             key="pregunta_casinopro"
         )
         
         contexto_adicional = st.text_area(
             "**Contexto adicional (opcional):**",
-            placeholder="Ej: El problema empezó después de... Solo ocurre cuando...",
+            placeholder="Ej: El problema empezó después de una actualización de software, solo ocurre cuando la máquina está caliente...",
             height=80
         )
         
@@ -620,9 +703,12 @@ def main():
                         import time
                         time.sleep(1)
                         
+                        # Si no se seleccionó aceptador específico, pasar None
+                        aceptador_para_analisis = aceptador_seleccionado if aceptador_seleccionado != "No específico" else "No específico"
+                        
                         respuesta = st.session_state.diagnostic_system.obtener_diagnostico_mejorado(
                             pregunta_usuario,
-                            aceptador_seleccionado, 
+                            aceptador_para_analisis, 
                             contexto_adicional
                         )
                         
@@ -636,8 +722,12 @@ def main():
                         # Información básica
                         col1, col2 = st.columns(2)
                         with col1:
-                            st.write(f"**🤖 Aceptador:** {respuesta['aceptador']}")
-                            st.write(f"**🏭 Fabricante:** {respuesta['datos_maquina'].get('fabricante', 'N/A')}")
+                            if aceptador_seleccionado != "No específico":
+                                st.write(f"**🤖 Aceptador:** {respuesta['aceptador']}")
+                                st.write(f"**🏭 Fabricante:** {respuesta['datos_maquina'].get('fabricante', 'N/A')}")
+                            else:
+                                st.write(f"**🎯 Tipo de consulta:** {tipo_consulta}")
+                                st.write(f"**🔧 Equipo:** Consulta general")
                         with col2:
                             st.write(f"**🎯 Confianza:** {respuesta['nivel_confianza']}")
                             st.write(f"**📋 Prioridad:** {respuesta['prioridad_recomendada']}")
