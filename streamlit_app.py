@@ -90,11 +90,11 @@ def mostrar_configuracion_api():
 class DeepSeekAPI:
     def __init__(self):
         self.api_key = get_deepseek_api_key()
-        self.base_url = "https://api.deepseek.com/v1/chat/completions"
+        self.base_url = "https://api.deepseek.com/v1"
         self.model = "deepseek-chat"
     
     def consultar_deepseek(self, pregunta, contexto_tecnico=""):
-        """Consultar la API real de DeepSeek"""
+        """Consultar la API real de DeepSeek - VERSIÓN MEJORADA"""
         
         if not self.api_key:
             return """
@@ -116,7 +116,7 @@ class DeepSeekAPI:
             ¡Una vez configurada, experimentá el poder real de la IA! 🚀
             """
         
-        # Prompt especializado para CasinoPro
+        # PROMPT MEJORADO - Más natural para conversaciones
         system_prompt = f"""
         Eres CasinoPro, un sistema experto en diagnóstico técnico de máquinas de casino con 25+ años de experiencia integrada.
 
@@ -137,8 +137,9 @@ class DeepSeekAPI:
         CONTEXTO ESPECÍFICO:
         {contexto_tecnico}
 
-        Responde como experto técnico:
-        - Para saludos y conversación casual: responde de forma natural y amigable
+        **IMPORTANTE - ESTILO DE RESPUESTA:**
+        - Para saludos y conversación casual: responde de forma NATURAL y AMIGABLE, como un asistente conversacional
+        - NO comiences con "Soy CasinoPro..." en saludos - sé directo y natural
         - Para problemas técnicos: usa formato técnico claro con pasos numerados
         - Incluye emojis relevantes para cada paso
         - Especifica niveles de prioridad (🚨 URGENTE, 🔴 ALTA, 🟡 MEDIA)
@@ -146,12 +147,18 @@ class DeepSeekAPI:
         - Sé preciso y específico con procedimientos
         - Mantén un estilo técnico pero amigable
 
-        IMPORTANTE: Para saludos como "hola", "cómo estás", responde de forma conversacional y natural.
+        **EJEMPLOS DE RESPUESTAS NATURALES:**
+        - Si te saludan: "¡Hola! 👋 ¿Cómo estás? Estoy aquí para ayudarte con tus máquinas de casino. ¿En qué puedo asistirte?"
+        - Si preguntan cómo estás: "¡Excelente! Listo para diagnosticar problemas técnicos. ¿Qué máquina necesita atención?"
+        - Para problemas técnicos: usar formato estructurado con emojis y pasos claros
         """
         
         try:
+            # USAR ENDPOINT CORRECTO DE DEEPSEEK
+            endpoint = f"{self.base_url}/chat/completions"
+            
             response = requests.post(
-                self.base_url,
+                endpoint,
                 headers={
                     "Authorization": f"Bearer {self.api_key}",
                     "Content-Type": "application/json"
@@ -168,27 +175,38 @@ class DeepSeekAPI:
                             "content": pregunta
                         }
                     ],
-                    "temperature": 0.7,  # Aumentado para respuestas más naturales
+                    "temperature": 0.8,  # Aumentado para respuestas más naturales
                     "max_tokens": 2000,
                     "stream": False
                 },
-                timeout=30
+                timeout=45  # Aumentado timeout
             )
             
             if response.status_code == 200:
-                return response.json()["choices"][0]["message"]["content"]
+                data = response.json()
+                return data["choices"][0]["message"]["content"]
             else:
                 error_msg = f"❌ Error API DeepSeek: {response.status_code}"
                 if response.status_code == 401:
-                    error_msg += " - API Key inválida"
+                    error_msg += " - API Key inválida o expirada"
                 elif response.status_code == 429:
                     error_msg += " - Límite de requests excedido"
+                elif response.status_code == 400:
+                    error_msg += " - Request mal formado"
+                else:
+                    try:
+                        error_detail = response.json().get('error', {}).get('message', '')
+                        error_msg += f" - {error_detail}"
+                    except:
+                        error_msg += f" - {response.text}"
                 return error_msg
                 
         except requests.exceptions.Timeout:
-            return "⏰ Timeout - DeepSeek no respondió a tiempo"
+            return "⏰ Timeout - DeepSeek no respondió a tiempo (45s)"
+        except requests.exceptions.ConnectionError:
+            return "🔌 Error de conexión - Verificá tu internet"
         except Exception as e:
-            return f"⚠️ Error de conexión: {str(e)}"
+            return f"⚠️ Error inesperado: {str(e)}"
 
 # ==================== IA "CASINOPRO" - SISTEMA INTELIGENTE ESPECIALIZADO ====================
 class CasinoProAISystem:
@@ -599,7 +617,7 @@ class CasinoProAISystem:
         }
 
     def analizar_problema(self, pregunta_usuario, datos_maquina=None, contexto=""):
-        """Análisis inteligente con DeepSeek AI y sistema local"""
+        """Análisis inteligente con DeepSeek AI y sistema local - VERSIÓN MEJORADA"""
         
         # Guardar en memoria de conversación
         entrada_conversacion = {
@@ -611,7 +629,7 @@ class CasinoProAISystem:
         }
         self.conversation_memory.append(entrada_conversacion)
         
-        # ✅✅✅ SOLUCIÓN DEFINITIVA: SIEMPRE usar DeepSeek primero cuando la API Key esté configurada
+        # ✅✅✅ MEJORA CLAVE: SIEMPRE usar DeepSeek primero cuando la API Key esté configurada
         if get_deepseek_api_key():
             # Preparar contexto técnico para DeepSeek
             contexto_tecnico = self._preparar_contexto_tecnico(datos_maquina, contexto)
@@ -619,12 +637,13 @@ class CasinoProAISystem:
             # Consultar DeepSeek real
             respuesta_ia = self.deepseek_api.consultar_deepseek(pregunta_usuario, contexto_tecnico)
             
-            # Solo si DeepSeek falla, usar sistema local
-            if any(error in respuesta_ia for error in ["❌", "⚠️", "⏰", "Error", "API Key"]):
+            # Solo si DeepSeek falla completamente, usar sistema local
+            if any(error in respuesta_ia for error in ["❌", "⚠️", "⏰", "Error API", "Timeout", "conexión"]):
+                st.warning("⚠️ DeepSeek no disponible, usando sistema local...")
                 return self._analizar_problema_local(pregunta_usuario, datos_maquina, contexto)
             
-            # ✅ Usar respuesta de DeepSeek para TODO (incluyendo saludos)
-            return self._formatear_respuesta_deepseek(respuesta_ia)
+            # ✅ MEJORA: Usar respuesta de DeepSeek para TODO (incluyendo saludos)
+            return self._formatear_respuesta_deepseek_mejorada(respuesta_ia, pregunta_usuario)
         else:
             # Si no hay API Key, usar sistema local
             return self._analizar_problema_local(pregunta_usuario, datos_maquina, contexto)
@@ -655,22 +674,32 @@ class CasinoProAISystem:
         
         return contexto_tecnico
     
-    def _formatear_respuesta_deepseek(self, respuesta_ia):
-        """Dar formato CasinoPro a la respuesta de DeepSeek"""
-        # ✅ SOLUCIÓN: No formatear respuestas de saludo, dejar la respuesta natural de DeepSeek
-        if any(saludo in respuesta_ia.lower() for saludo in ['hola', '¡hola', 'hola!', 'cómo estás', 'qué tal']):
-            return respuesta_ia  # Devolver respuesta natural sin formato CasinoPro
+    def _formatear_respuesta_deepseek_mejorada(self, respuesta_ia, pregunta_original):
+        """Dar formato CasinoPro a la respuesta de DeepSeek - VERSIÓN MEJORADA"""
         
+        # ✅ DETECCIÓN MEJORADA DE CONVERSACIÓN NATURAL
+        pregunta_lower = pregunta_original.lower()
+        es_conversacion_natural = any(saludo in pregunta_lower for saludo in [
+            'hola', '¡hola', 'hola!', 'holaa', 'holaaa', 'holis', 'holiwis',
+            'cómo estás', 'qué tal', 'cómo te va', 'buenos días', 'buenas tardes', 
+            'buenas noches', 'hey', 'hi', 'hello', 'saludos', 'qué onda',
+            'buen día', 'good morning', 'good afternoon', 'good evening'
+        ])
+        
+        # ✅ Si es conversación natural, devolver SOLO la respuesta de DeepSeek (sin formato extra)
+        if es_conversacion_natural:
+            return respuesta_ia  # Respuesta directa de DeepSeek sin modificaciones
+        
+        # ✅ Si es diagnóstico técnico, aplicar formato CasinoPro
         return f"""
-        🎰 **CasinoPro - DeepSeek AI** 🧠
-        
-        {respuesta_ia}
-        
-        ---
-        *Diagnóstico generado por {self.personalidad['nombre']} v{self.version}*
-        *Tecnología DeepSeek AI - Código: {self.codigo_ia}*
-        *Sistema de aprendizaje continuo activado*
-        """
+🎰 **CasinoPro - DeepSeek AI** 🧠
+
+{respuesta_ia}
+
+---
+*Diagnóstico generado por {self.personalidad['nombre']} v{self.version}*
+*Tecnología DeepSeek AI - Código: {self.codigo_ia}*
+"""
     
     def _analizar_problema_local(self, pregunta_usuario, datos_maquina=None, contexto=""):
         """Sistema local de análisis (para cuando DeepSeek falla)"""
