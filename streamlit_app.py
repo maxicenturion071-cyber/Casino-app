@@ -17,19 +17,27 @@ st.set_page_config(
 
 # ==================== CONFIGURACIÓN DEEPSEEK EN SIDEBAR ====================
 def get_deepseek_api_key():
-    """Obtener API Key de forma segura desde sidebar"""
-    # Opción 1: Desde secrets de Streamlit
+    """Obtener API Key de forma segura desde sidebar - VERSIÓN MEJORADA"""
+    
+    # ✅ PRIMERO: Verificar si el usuario acaba de guardar la key
+    if 'api_key_input' in st.session_state and st.session_state.api_key_input:
+        if st.session_state.api_key_input.startswith('sk-'):
+            st.session_state.deepseek_api_key = st.session_state.api_key_input
+            return st.session_state.api_key_input
+    
+    # ✅ SEGUNDO: Verificar session state
+    if 'deepseek_api_key' in st.session_state and st.session_state.deepseek_api_key:
+        if st.session_state.deepseek_api_key.startswith('sk-'):
+            return st.session_state.deepseek_api_key
+    
+    # ✅ TERCERO: Secrets de Streamlit
     if 'DEEPSEEK_API_KEY' in st.secrets:
         return st.secrets['DEEPSEEK_API_KEY']
     
-    # Opción 2: Desde variable de entorno
+    # ✅ CUARTO: Variable de entorno
     import os
     if 'DEEPSEEK_API_KEY' in os.environ:
         return os.environ.get('DEEPSEEK_API_KEY')
-    
-    # Opción 3: Desde session state (input del usuario en sidebar)
-    if 'deepseek_api_key' in st.session_state and st.session_state.deepseek_api_key:
-        return st.session_state.deepseek_api_key
     
     return None
 
@@ -86,17 +94,45 @@ def mostrar_configuracion_api():
         • Análisis contextual mejorado
         """)
 
+def mostrar_debug_info():
+    """Mostrar información de debug en sidebar"""
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("🔍 Debug Info")
+    
+    # Verificar API Key
+    api_key = get_deepseek_api_key()
+    st.sidebar.write(f"**API Key detectada:** {bool(api_key)}")
+    if api_key:
+        st.sidebar.write(f"**Key:** {api_key[:10]}...{api_key[-4:]}")
+    
+    # Verificar session state
+    st.sidebar.write(f"**Session State Key:** {'deepseek_api_key' in st.session_state}")
+    
+    # Verificar si DeepSeek está activo
+    if 'diagnostic_system' in st.session_state:
+        st.sidebar.write(f"**Sistema AI cargado:** ✅")
+    else:
+        st.sidebar.write(f"**Sistema AI cargado:** ❌")
+
 # ==================== DEEPSEEK API REAL ====================
 class DeepSeekAPI:
     def __init__(self):
-        self.api_key = get_deepseek_api_key()
-        self.base_url = "https://api.deepseek.com/v1/chat/completions"
+        self.base_url = "https://api.deepseek.com/v1"
         self.model = "deepseek-chat"
     
     def consultar_deepseek(self, pregunta, contexto_tecnico=""):
-        """Consultar la API real de DeepSeek"""
+        """Consultar la API real de DeepSeek - VERSIÓN CON DEBUG"""
         
-        if not self.api_key:
+        # ✅ DEBUG: Mostrar información de la API Key
+        api_key = get_deepseek_api_key()
+        st.sidebar.info(f"🔍 DEBUG: API Key presente: {bool(api_key)}")
+        
+        if api_key:
+            st.sidebar.info(f"🔍 DEBUG: Key inicia con: {api_key[:10]}...")
+        
+        if not api_key:
+            debug_msg = "❌ NO HAY API KEY - Usando sistema local"
+            st.sidebar.error(debug_msg)
             return """
             🔐 **Configuración Requerida**
             
@@ -116,7 +152,7 @@ class DeepSeekAPI:
             ¡Una vez configurada, experimentá el poder real de la IA! 🚀
             """
         
-        # Prompt especializado para CasinoPro
+        # PROMPT MEJORADO
         system_prompt = f"""
         Eres CasinoPro, un sistema experto en diagnóstico técnico de máquinas de casino con 25+ años de experiencia integrada.
 
@@ -137,8 +173,9 @@ class DeepSeekAPI:
         CONTEXTO ESPECÍFICO:
         {contexto_tecnico}
 
-        Responde como experto técnico:
-        - Para saludos y conversación casual: responde de forma natural y amigable
+        **IMPORTANTE - ESTILO DE RESPUESTA:**
+        - Para saludos y conversación casual: responde de forma NATURAL y AMIGABLE, como un asistente conversacional
+        - NO comiences con "Soy CasinoPro..." en saludos - sé directo y natural
         - Para problemas técnicos: usa formato técnico claro con pasos numerados
         - Incluye emojis relevantes para cada paso
         - Especifica niveles de prioridad (🚨 URGENTE, 🔴 ALTA, 🟡 MEDIA)
@@ -146,14 +183,21 @@ class DeepSeekAPI:
         - Sé preciso y específico con procedimientos
         - Mantén un estilo técnico pero amigable
 
-        IMPORTANTE: Para saludos como "hola", "cómo estás", responde de forma conversacional y natural.
+        **EJEMPLOS DE RESPUESTAS NATURALES:**
+        - Si te saludan: "¡Hola! 👋 ¿Cómo estás? Estoy aquí para ayudarte con tus máquinas de casino. ¿En qué puedo asistirte?"
+        - Si preguntan cómo estás: "¡Excelente! Listo para diagnosticar problemas técnicos. ¿Qué máquina necesita atención?"
+        - Para problemas técnicos: usar formato estructurado con emojis y pasos claros
         """
         
         try:
+            endpoint = f"{self.base_url}/chat/completions"
+            
+            st.sidebar.info("🔍 DEBUG: Enviando request a DeepSeek...")
+            
             response = requests.post(
-                self.base_url,
+                endpoint,
                 headers={
-                    "Authorization": f"Bearer {self.api_key}",
+                    "Authorization": f"Bearer {api_key}",
                     "Content-Type": "application/json"
                 },
                 json={
@@ -168,27 +212,50 @@ class DeepSeekAPI:
                             "content": pregunta
                         }
                     ],
-                    "temperature": 0.7,  # Aumentado para respuestas más naturales
+                    "temperature": 0.8,
                     "max_tokens": 2000,
                     "stream": False
                 },
-                timeout=30
+                timeout=45
             )
             
+            st.sidebar.info(f"🔍 DEBUG: Status Code: {response.status_code}")
+            
             if response.status_code == 200:
-                return response.json()["choices"][0]["message"]["content"]
+                data = response.json()
+                respuesta = data["choices"][0]["message"]["content"]
+                st.sidebar.success("✅ DEBUG: DeepSeek respondió correctamente")
+                return respuesta
             else:
                 error_msg = f"❌ Error API DeepSeek: {response.status_code}"
                 if response.status_code == 401:
-                    error_msg += " - API Key inválida"
+                    error_msg += " - API Key inválida o expirada"
                 elif response.status_code == 429:
                     error_msg += " - Límite de requests excedido"
+                elif response.status_code == 400:
+                    error_msg += " - Request mal formado"
+                else:
+                    try:
+                        error_detail = response.json().get('error', {}).get('message', '')
+                        error_msg += f" - {error_detail}"
+                    except:
+                        error_msg += f" - {response.text}"
+                
+                st.sidebar.error(f"🔍 DEBUG: {error_msg}")
                 return error_msg
                 
         except requests.exceptions.Timeout:
-            return "⏰ Timeout - DeepSeek no respondió a tiempo"
+            error = "⏰ Timeout - DeepSeek no respondió a tiempo (45s)"
+            st.sidebar.error(f"🔍 DEBUG: {error}")
+            return error
+        except requests.exceptions.ConnectionError:
+            error = "🔌 Error de conexión - Verificá tu internet"
+            st.sidebar.error(f"🔍 DEBUG: {error}")
+            return error
         except Exception as e:
-            return f"⚠️ Error de conexión: {str(e)}"
+            error = f"⚠️ Error inesperado: {str(e)}"
+            st.sidebar.error(f"🔍 DEBUG: {error}")
+            return error
 
 # ==================== IA "CASINOPRO" - SISTEMA INTELIGENTE ESPECIALIZADO ====================
 class CasinoProAISystem:
@@ -381,7 +448,6 @@ class CasinoProAISystem:
                     'usage_count': 0,
                     'success_rate': 0.80
                 },
-                # NUEVOS PROBLEMAS AGREGADOS
                 'problema_pagos': {
                     'diagnostico': "Falla en sistema de pagos o hopper",
                     'pasos': [
@@ -410,7 +476,6 @@ class CasinoProAISystem:
                     'usage_count': 0,
                     'success_rate': 0.70
                 },
-                # VERTEX CONTROLLER PROBLEMS
                 'vertex_no_enciende': {
                     'diagnostico': "Problema de alimentación Vertex Controller",
                     'pasos': [
@@ -459,147 +524,161 @@ class CasinoProAISystem:
                 'vertex_jurisdiccion': {
                     'diagnostico': "Configuración de jurisdicción incorrecta",
                     'pasos': [
-                        "1. 🌎 USER INTERFACE → Seleccionar jurisdicción",
-                        "2. 🇦🇷 Para Argentina: Argentina - Buenos Aires",
-                        "3. 🔧 Credenciales VERTEX 4.0: Retail1/Retail1",
-                        "4. 🔑 Credenciales VERTEX 3.5: admin/Password1",
-                        "5. 💾 Guardar configuración y reiniciar controlador"
+                        "1. ⚙️ Configurar jurisdicción: Argentina - Buenos Aires",
+                        "2. 🔄 Reiniciar controlador después del cambio",
+                        "3. 📋 Verificar configuración regional",
+                        "4. 🔧 Ajustar parámetros locales",
+                        "5. ✅ Confirmar con test de operación"
                     ],
                     'prioridad': "🟡 MEDIA",
-                    'confidence': 0.85,
-                    'usage_count': 0,
-                    'success_rate': 0.90
-                },
-                'vertex_ram_clear': {
-                    'diagnostico': "Procedimiento Ram Clear para Vertex Controller",
-                    'pasos': [
-                        "1. 💻 Acceder a Vertex Controller (192.168.50.2)",
-                        "2. 📊 Navegar a: DataBase → BackUp/Restore → Ram Clear",
-                        "3. ⚠️ CONFIRMAR: Esto borrará toda configuración actual",
-                        "4. 🔄 El sistema se reiniciará automáticamente",
-                        "5. 🔧 Reconfigurar desde cero después del Ram Clear",
-                        "6. 💾 Tener backup de configuración antes de proceder"
-                    ],
-                    'prioridad': "🔴 ALTA",
-                    'confidence': 0.95,
-                    'usage_count': 0,
-                    'success_rate': 0.85
-                },
-                'vertex_config_ip': {
-                    'diagnostico': "Configuración de red IP para Vertex",
-                    'pasos': [
-                        "1. 🌐 Menú Network → Configuración IP",
-                        "2. ⚙️ Seleccionar IP estático: 192.168.50.2",
-                        "3. 🛡️ Mask: 255.255.255.0",
-                        "4. 🚪 Gateway: 192.168.50.1",
-                        "5. 💾 Guardar configuración",
-                        "6. 🔄 Reiniciar controlador para aplicar cambios"
-                    ],
-                    'prioridad': "🟡 MEDIA",
-                    'confidence': 0.90,
-                    'usage_count': 0,
-                    'success_rate': 0.95
-                },
-                'vertex_agregar_egm': {
-                    'diagnostico': "Agregar nueva EGM al sistema Vertex",
-                    'pasos': [
-                        "1. 🎰 Menú EGMs → Add New EGM",
-                        "2. 🔍 Seleccionar MAC Address de la máquina",
-                        "3. 📝 Asignar nombre descriptivo",
-                        "4. 💾 Guardar configuración",
-                        "5. 🔄 Verificar comunicación en lista de EGMs",
-                        "6. 📊 Confirmar que aparece como 'Connected'"
-                    ],
-                    'prioridad': "🟡 MEDIA",
-                    'confidence': 0.88,
-                    'usage_count': 0,
-                    'success_rate': 0.90
-                },
-                'vertex_lightning_link': {
-                    'diagnostico': "Configuración Lightning Link progresivo",
-                    'pasos': [
-                        "1. ⚡ Menú Progressives → Lightning Link",
-                        "2. 🔧 Configurar plugin específico",
-                        "3. ⚙️ Establecer Runaway Meter Threshold: 200000",
-                        "4. 💾 Guardar configuración progresiva",
-                        "5. 🔄 Reiniciar controlador",
-                        "6. 📡 Verificar comunicación con EGMs"
-                    ],
-                    'prioridad': "🔴 ALTA",
                     'confidence': 0.85,
                     'usage_count': 0,
                     'success_rate': 0.80
                 }
             },
-            'fabricantes_especificos': {
-                'aristocrat': {
-                    'helix': "Reset completo: Desconectar 10min + POWER + SERVICE simultáneo",
-                    'oasis': "Limpieza mensual de ventiladores - Tiende a sobrecalentar",
-                    'edge': "Recalibrar touch con herramienta Edge específica",
-                    'mk6': "Verificar versión de firmware - Actualizar si es necesario",
-                    'general': "Problemas comunes: sobrecalentamiento y touch"
+            
+            'maquinas_especificas': {
+                'aristocrat_helix': {
+                    'modelo': 'Helix',
+                    'fabricante': 'Aristocrat',
+                    'caracteristicas': ['Touch 19"', 'Aceptador MEI SCN66', 'Vertex 3.5'],
+                    'problemas_comunes': ['touch_no_responde', 'rechaza_billetes']
                 },
-                'bally': {
-                    'alpha_pro': "F2 durante boot para diagnóstico hardware integrado",
-                    'alpha_2': "Problemas térmicos comunes - Instalar ventilador adicional",
-                    'iview': "90% problemas de display = cable flat dañado o suelto",
-                    'pro_wave': "Verificar conexiones de audio surround",
-                    'general': "Problemas comunes: display y comunicación"
+                'aristocrat_oasis': {
+                    'modelo': 'Oasis',
+                    'fabricante': 'Aristocrat', 
+                    'caracteristicas': ['Display 32"', 'Aceptador JCM UBA-10', 'Vertex 4.0'],
+                    'problemas_comunes': ['sobrecalentamiento', 'problema_audio']
                 },
-                'igt': {
-                    'peak': "CPU sobrecalienta en verano - Ventilador adicional recomendado",
-                    's_plus': "Usar únicamente fuentes certificadas IGT",
-                    's2000': "Problemas comunes en placa MPU - Verificar condensadores",
-                    'game_king': "Reset de fábrica soluciona 70% problemas de software",
-                    'general': "Problemas comunes: fuente de poder y software"
+                'aristocrat_edge': {
+                    'modelo': 'Edge',
+                    'fabricante': 'Aristocrat',
+                    'caracteristicas': ['Display 27"', 'Aceptador CashFlow 7000', 'Vertex 3.5'],
+                    'problemas_comunes': ['comunicacion_falla', 'problema_red']
                 },
-                'konami': {
-                    'concerto': "Pantalla curva necesita calibración especializada",
-                    'kx': "Verificar voltajes +5V y +12V regularmente", 
-                    'helix_core': "Reset mensual preventivo recomendado",
-                    'general': "Problemas comunes: voltaje y calibración"
+                'aristocrat_mk6': {
+                    'modelo': 'MK6',
+                    'fabricante': 'Aristocrat',
+                    'caracteristicas': ['Display 15"', 'Aceptador Aristocrat NV9', 'Sistema Legacy'],
+                    'problemas_comunes': ['no_enciende', 'error_sistema']
                 },
-                'vertex': {
-                    'vertex_3.5': "Solo 1 puerto USB - Requiere HUB USB para teclado/mouse",
-                    'vertex_4.0': "Display Port o VGA - Fuente externa al controlador",
-                    'configuracion_red': "Todas EGMs y controlador via switch DHCP",
-                    'lightning_link': "Plugin específico para progresivos Lighting Link",
-                    'general': "Problemas comunes: base datos, comunicación, jurisdicción"
+                'bally_alphapro': {
+                    'modelo': 'Alpha Pro',
+                    'fabricante': 'Bally',
+                    'caracteristicas': ['Display 23"', 'Aceptador MEI SCN66', 'iView Display'],
+                    'problemas_comunes': ['problema_pagos', 'touch_no_responde']
                 },
-                'general': {
-                    'aceptadores': "Los aceptadores suelen fallar por suciedad en sensores",
-                    'fuente_poder': "Verificar siempre voltajes de salida primero",
-                    'pantallas': "90% problemas de pantalla son por cables flat",
-                    'comunicacion': "Revisar configuración MDB/RS-232 siempre"
+                'bally_iview': {
+                    'modelo': 'iView',
+                    'fabricante': 'Bally',
+                    'caracteristicas': ['Display 19"', 'Sistema Touch', 'Player Tracking'],
+                    'problemas_comunes': ['touch_no_responde', 'problema_audio']
+                },
+                'igt_peak': {
+                    'modelo': 'Peak',
+                    'fabricante': 'IGT',
+                    'caracteristicas': ['Display 32"', 'Aceptador JCM UBA-10', 'Sistema Dual Screen'],
+                    'problemas_comunes': ['sobrecalentamiento', 'problema_red']
+                },
+                'igt_s3000': {
+                    'modelo': 'S3000',
+                    'fabricante': 'IGT',
+                    'caracteristicas': ['Display 17"', 'Aceptador MEI SCN66', 'Sistema Clásico'],
+                    'problemas_comunes': ['no_enciende', 'rechaza_billetes']
+                },
+                'konami_concerto': {
+                    'modelo': 'Concerto',
+                    'fabricante': 'Konami',
+                    'caracteristicas': ['Display 42"', 'Aceptador JCM UBA-10', 'Sistema Panorámico'],
+                    'problemas_comunes': ['problema_audio', 'sobrecalentamiento']
+                },
+                'konami_kx': {
+                    'modelo': 'KX',
+                    'fabricante': 'Konami',
+                    'caracteristicas': ['Display 23"', 'Aceptador CashFlow 7000', 'Sistema Compacto'],
+                    'problemas_comunes': ['comunicacion_falla', 'problema_botones']
+                },
+                'aristocrat_lightning_link': {
+                    'modelo': 'Lightning Link',
+                    'fabricante': 'Aristocrat',
+                    'caracteristicas': ['Display 32"', 'Progresivo Link', 'Vertex 4.0'],
+                    'problemas_comunes': ['problema_red', 'vertex_comunicacion']
+                },
+                'aristocrat_celebration': {
+                    'modelo': 'Celebration',
+                    'fabricante': 'Aristocrat',
+                    'caracteristicas': ['Display 19"', 'Aceptador MEI SCN66', 'Vertex 3.5'],
+                    'problemas_comunes': ['rechaza_billetes', 'touch_no_responde']
+                },
+                'aristocrat_opus': {
+                    'modelo': 'Opus',
+                    'fabricante': 'Aristocrat',
+                    'caracteristicas': ['Display 42"', 'Aceptador JCM UBA-10', 'Vertex 4.0'],
+                    'problemas_comunes': ['sobrecalentamiento', 'problema_audio']
+                },
+                'bally_prowave': {
+                    'modelo': 'ProWave',
+                    'fabricante': 'Bally',
+                    'caracteristicas': ['Display 27"', 'Aceptador MEI SCN66', 'iView 4'],
+                    'problemas_comunes': ['problema_pagos', 'vertex_database']
+                },
+                'igt_avp': {
+                    'modelo': 'AVP',
+                    'fabricante': 'IGT',
+                    'caracteristicas': ['Display 23"', 'Aceptador CashFlow 7000', 'Sistema Avanzado'],
+                    'problemas_comunes': ['error_sistema', 'comunicacion_falla']
+                },
+                'konami_ks': {
+                    'modelo': 'KS',
+                    'fabricante': 'Konami',
+                    'caracteristicas': ['Display 19"', 'Aceptador MEI SCN66', 'Sistema Estándar'],
+                    'problemas_comunes': ['no_enciende', 'problema_botones']
+                },
+                'aristocrat_aurora': {
+                    'modelo': 'Aurora',
+                    'fabricante': 'Aristocrat',
+                    'caracteristicas': ['Display 49"', '4K Resolution', 'Vertex 4.0'],
+                    'problemas_comunes': ['sobrecalentamiento', 'problema_red']
+                },
+                'bally_canine': {
+                    'modelo': 'Canine',
+                    'fabricante': 'Bally',
+                    'caracteristicas': ['Display 32"', 'Aceptador JCM UBA-10', 'iView 5'],
+                    'problemas_comunes': ['touch_no_responde', 'problema_audio']
+                },
+                'igt_crystal': {
+                    'modelo': 'Crystal',
+                    'fabricante': 'IGT',
+                    'caracteristicas': ['Display 27"', 'Aceptador MEI SCN66', 'Sistema Crystal'],
+                    'problemas_comunes': ['rechaza_billetes', 'vertex_jurisdiccion']
+                },
+                'konami_frogger': {
+                    'modelo': 'Frogger',
+                    'fabricante': 'Konami',
+                    'caracteristicas': ['Display 23"', 'Aceptador CashFlow 7000', 'Sistema Retro'],
+                    'problemas_comunes': ['error_sistema', 'problema_pagos']
+                },
+                'aristocrat_dragon': {
+                    'modelo': 'Dragon',
+                    'fabricante': 'Aristocrat',
+                    'caracteristicas': ['Display 42"', 'Aceptador JCM UBA-10', 'Vertex 4.0'],
+                    'problemas_comunes': ['vertex_no_enciende', 'comunicacion_falla']
+                },
+                'bally_tiger': {
+                    'modelo': 'Tiger',
+                    'fabricante': 'Bally',
+                    'caracteristicas': ['Display 32"', 'Aceptador MEI SCN66', 'iView 6'],
+                    'problemas_comunes': ['problema_red', 'touch_no_responde']
                 }
-            },
-            'vertex_controller': {
-                'vertex_3.5': {
-                    'ensamblaje': "Remover tapa frontal con tuerca 7mm, conectar disco SATA y Plugin CF",
-                    'configuracion_ip': "IP: 192.168.50.2, Mask: 255.255.255.0, Gateway: 192.168.50.1",
-                    'credenciales': "Usuario: Retail1, Contraseña: Retail1 (VERTEX 4.0)",
-                    'apagado_correcto': "PULSAR Y SOLTAR botón frontal - NO mantener presionado",
-                    'problemas_comunes': "Base de datos defectuosa si no muestra 'Passed'"
-                },
-                'vertex_4.0': {
-                    'ensamblaje': "Remover placa aluminio (disipador RAM), montar disco, plugin CFAST1",
-                    'alimentacion': "Fuente externa al controlador (diferente a v3.5)",
-                    'configuracion_red': "Todos dispositivos conectados via switch DHCP",
-                    'estructura_red': "8 máquinas Helix XT + Splitter HDMI + AMP + Switch"
-                },
-                'procedimientos_criticos': {
-                    'ram_clear': "Menú DataBase → BackUp/Restore → Ram Clear",
-                    'cambio_jurisdiccion': "USER INTERFACE → Seleccionar Argentina - Buenos Aires",
-                    'asociar_egms': "EGMs → Add New EGM → Seleccionar MAC Address",
-                    'runaway_threshold': "Progressives → Options → Runaway Meter Threshold: 200000"
-                }
-            },
-            'nuevos_problemas': {},
-            'soluciones_personalizadas': {}
+            }
         }
 
+    # ==================== MÉTODOS PRINCIPALES CORREGIDOS ====================
+    
     def analizar_problema(self, pregunta_usuario, datos_maquina=None, contexto=""):
-        """Análisis inteligente con DeepSeek AI y sistema local"""
+        """Análisis inteligente con DeepSeek AI - VERSIÓN DEFINITIVA"""
+        
+        st.sidebar.error("🎯 INICIANDO ANALIZAR_PROBLEMA")
         
         # Guardar en memoria de conversación
         entrada_conversacion = {
@@ -611,1175 +690,193 @@ class CasinoProAISystem:
         }
         self.conversation_memory.append(entrada_conversacion)
         
-        # ✅✅✅ SOLUCIÓN DEFINITIVA: SIEMPRE usar DeepSeek primero cuando la API Key esté configurada
-        if get_deepseek_api_key():
-            # Preparar contexto técnico para DeepSeek
+        # ✅ DEBUG DETALLADO de la API Key
+        api_key_actual = get_deepseek_api_key()
+        
+        st.sidebar.error(f"🔍 DEBUG API KEY: {api_key_actual}")
+        st.sidebar.error(f"🔍 DEBUG API KEY LENGTH: {len(api_key_actual) if api_key_actual else 0}")
+        if api_key_actual:
+            st.sidebar.error(f"🔍 DEBUG STARTS WITH sk-: {api_key_actual.startswith('sk-')}")
+        
+        # ✅ FORZAR DEEPSEEK SI HAY ALGO DE API KEY
+        if api_key_actual and len(api_key_actual) > 10:
+            st.sidebar.success("✅ ANALIZAR_PROBLEMA: FORZANDO DeepSeek API")
+            
+            # ✅ DEEPSEEK ACTIVO - Usar API real para TODO
             contexto_tecnico = self._preparar_contexto_tecnico(datos_maquina, contexto)
             
-            # Consultar DeepSeek real
+            # ✅ LLAMAR DIRECTAMENTE a DeepSeek para TODOS los mensajes
             respuesta_ia = self.deepseek_api.consultar_deepseek(pregunta_usuario, contexto_tecnico)
             
-            # Solo si DeepSeek falla, usar sistema local
-            if any(error in respuesta_ia for error in ["❌", "⚠️", "⏰", "Error", "API Key"]):
+            st.sidebar.info(f"🔍 ANALIZAR_PROBLEMA: Respuesta DeepSeek recibida: {len(respuesta_ia) if respuesta_ia else 0} chars")
+            
+            # Solo si DeepSeek falla completamente, usar sistema local
+            if any(error in respuesta_ia for error in ["❌", "⚠️", "⏰", "Error API", "Timeout", "conexión"]):
+                st.sidebar.warning("⚠️ ANALIZAR_PROBLEMA: DeepSeek falló, usando sistema local")
                 return self._analizar_problema_local(pregunta_usuario, datos_maquina, contexto)
             
-            # ✅ Usar respuesta de DeepSeek para TODO (incluyendo saludos)
-            return self._formatear_respuesta_deepseek(respuesta_ia)
+            # ✅ USAR RESPUESTA DE DEEPSEEK
+            st.sidebar.success("✅ ANALIZAR_PROBLEMA: Usando respuesta DeepSeek")
+            return respuesta_ia
+            
         else:
-            # Si no hay API Key, usar sistema local
+            # ✅ NO HAY API KEY - Usar sistema local
+            st.sidebar.warning("⚠️ ANALIZAR_PROBLEMA: Sin API Key válida, usando sistema local")
             return self._analizar_problema_local(pregunta_usuario, datos_maquina, contexto)
     
-    def _preparar_contexto_tecnico(self, datos_maquina, contexto):
+    def _preparar_contexto_tecnico(self, datos_maquina=None, contexto=""):
         """Preparar contexto técnico para DeepSeek"""
-        contexto_tecnico = "**INFORMACIÓN TÉCNICA CASINOPRO:**\n\n"
+        contexto_tecnico = "CONTEXTO TÉCNICO CASINOPRO:\n"
+        contexto_tecnico += f"- Sistema: {self.nombre} v{self.version}\n"
+        contexto_tecnico += f"- Especialidades: Vertex Controller, Aristocrat, Bally, IGT, Konami\n"
+        contexto_tecnico += f"- Máquinas en base: {len(self.knowledge_base['maquinas_especificas'])}\n"
+        contexto_tecnico += f"- Problemas conocidos: {len(self.knowledge_base['problemas_comunes'])}\n"
         
         if datos_maquina:
-            contexto_tecnico += f"**Equipo:** {datos_maquina.get('fabricante', 'N/A')} - {datos_maquina.get('tipo', 'N/A')}\n"
-            contexto_tecnico += f"**Voltaje:** {datos_maquina.get('voltaje', 'N/A')}\n"
-            contexto_tecnico += f"**Comunicación:** {datos_maquina.get('comunicacion', 'N/A')}\n\n"
+            contexto_tecnico += f"- Máquina actual: {datos_maquina}\n"
         
         if contexto:
-            contexto_tecnico += f"**Contexto adicional:** {contexto}\n\n"
-        
-        # Agregar conocimiento especializado
-        contexto_tecnico += "**BASE DE CONOCIMIENTO CASINOPRO:**\n"
-        for categoria, info in self.knowledge_base.items():
-            if categoria != 'nuevos_problemas' and categoria != 'soluciones_personalizadas':
-                contexto_tecnico += f"\n**{categoria.replace('_', ' ').upper()}:**\n"
-                if isinstance(info, dict):
-                    for clave, valor in info.items():
-                        if isinstance(valor, dict) and 'diagnostico' in valor:
-                            contexto_tecnico += f"- {clave}: {valor['diagnostico']}\n"
-                        else:
-                            contexto_tecnico += f"- {clave}: {valor}\n"
+            contexto_tecnico += f"- Contexto adicional: {contexto}\n"
+            
+        # Agregar últimos mensajes para contexto conversacional
+        if len(self.conversation_memory) > 0:
+            contexto_tecnico += "\nÚLTIMOS MENSAJES:\n"
+            for msg in self.conversation_memory[-3:]:
+                if 'question' in msg:
+                    contexto_tecnico += f"Usuario: {msg['question']}\n"
+                if 'system' in msg:
+                    contexto_tecnico += f"Sistema: {msg['system'][:100]}...\n"
         
         return contexto_tecnico
     
-    def _formatear_respuesta_deepseek(self, respuesta_ia):
-        """Dar formato CasinoPro a la respuesta de DeepSeek"""
-        # ✅ SOLUCIÓN: No formatear respuestas de saludo, dejar la respuesta natural de DeepSeek
-        if any(saludo in respuesta_ia.lower() for saludo in ['hola', '¡hola', 'hola!', 'cómo estás', 'qué tal']):
-            return respuesta_ia  # Devolver respuesta natural sin formato CasinoPro
-        
-        return f"""
-        🎰 **CasinoPro - DeepSeek AI** 🧠
-        
-        {respuesta_ia}
-        
-        ---
-        *Diagnóstico generado por {self.personalidad['nombre']} v{self.version}*
-        *Tecnología DeepSeek AI - Código: {self.codigo_ia}*
-        *Sistema de aprendizaje continuo activado*
-        """
-    
     def _analizar_problema_local(self, pregunta_usuario, datos_maquina=None, contexto=""):
-        """Sistema local de análisis (para cuando DeepSeek falla)"""
-        
-        # Primero verificar si es un saludo
-        if self._es_saludo(pregunta_usuario):
-            return self._generar_respuesta_saludo()
-        
-        # Buscar en patrones aprendidos primero
-        respuesta_aprendida = self._verificar_patrones_aprendidos(pregunta_usuario)
-        if respuesta_aprendida:
-            return respuesta_aprendida
-        
-        # Si no hay patrones aprendidos, usar base de conocimiento
+        """Análisis local cuando no hay API Key disponible"""
+        # Detectar tipo de problema
         tipo_problema = self._detectar_tipo_problema(pregunta_usuario)
-        respuesta = self._generar_respuesta_casinopro(tipo_problema, datos_maquina, pregunta_usuario, contexto)
         
-        # Aprender de esta consulta
-        self._aprender_de_consulta(pregunta_usuario, tipo_problema, datos_maquina)
+        # Generar respuesta local
+        respuesta_local = self._generar_respuesta_casinopro(pregunta_usuario, tipo_problema, datos_maquina)
         
-        return respuesta
-    
-    def _es_saludo(self, pregunta):
-        """Detectar si es un saludo"""
-        pregunta_lower = pregunta.lower()
-        saludos = [
-            'hola', 'hola!', 'hola!', 'holaa', 'holaaa', 'holis', 'holiwis',
-            'buenos días', 'buenas tardes', 'buenas noches', 
-            'hey', 'hi', 'hello', 'saludos', 'qué onda',
-            'buen día', 'good morning', 'good afternoon',
-            'cómo estás', 'qué tal', 'cómo te va'
-        ]
-        return any(saludo in pregunta_lower for saludo in saludos)
-    
-    def _generar_respuesta_saludo(self):
-        """Generar respuesta de saludo natural"""
-        return f"""
-        🎰 **{self.personalidad['nombre']}** - **DeepSeek AI** 🧠
-        
-        ¡Hola! 👋 Soy {self.personalidad['nombre']} con tecnología DeepSeek AI, tu especialista en diagnóstico técnico de máquinas de casino.
-        
-        {self.personalidad['saludo']}
-        
-        🚀 **Puedo ayudarte con:**
-        • Diagnóstico de problemas técnicos con IA avanzada
-        • Procedimientos de Vertex Controller 3.5/4.0
-        • Configuración de aceptadores (MEI, JCM)
-        • Problemas de comunicación y red
-        • Calibración y mantenimiento
-        
-        💡 **Ejemplos de lo que podés preguntar:**
-        • "Mi Vertex no enciende"
-        • "El aceptador rechaza billetes" 
-        • "Cómo hacer ram clear"
-        • "Problema de touch en Aristocrat Helix"
-        
-        ¡Contame, ¿en qué puedo asistirte hoy? 🤖🧠
-        """
-    
-    def _verificar_patrones_aprendidos(self, pregunta):
-        """Verificar si hay patrones aprendidos para esta pregunta"""
-        pregunta_hash = hashlib.md5(pregunta.lower().encode()).hexdigest()
-        
-        if pregunta_hash in self.learned_patterns:
-            patron = self.learned_patterns[pregunta_hash]
-            patron['usage_count'] += 1
-            
-            # Mejorar confianza con uso exitoso
-            if patron['usage_count'] > 5:
-                patron['confidence'] = min(0.98, patron['confidence'] + 0.02)
-            
-            return self._formatear_respuesta_aprendida(patron)
-        
-        return None
-    
-    def _aprender_de_consulta(self, pregunta, tipo_problema, datos_maquina):
-        """Aprender de nuevas consultas"""
-        pregunta_hash = hashlib.md5(pregunta.lower().encode()).hexdigest()
-        
-        if pregunta_hash not in self.learned_patterns:
-            self.learned_patterns[pregunta_hash] = {
-                'question_pattern': pregunta.lower(),
-                'problem_type': tipo_problema,
-                'machine_type': datos_maquina.get('fabricante', '') if datos_maquina else '',
-                'first_seen': datetime.now().isoformat(),
-                'usage_count': 1,
-                'confidence': 0.70,
-                'success_count': 0,
-                'failure_count': 0,
-                'learned_by': 'CasinoPro'
-            }
-        else:
-            self.learned_patterns[pregunta_hash]['usage_count'] += 1
-        
-        # Guardar datos aprendidos
-        self.save_learned_data()
-    
-    def agregar_feedback(self, pregunta, solucion_usada, fue_efectiva=True, rating=None, comentarios=""):
-        """Agregar feedback del usuario"""
-        pregunta_hash = hashlib.md5(pregunta.lower().encode()).hexdigest()
-        
-        if pregunta_hash not in self.user_feedback:
-            self.user_feedback[pregunta_hash] = []
-        
-        entrada_feedback = {
-            'timestamp': datetime.now().isoformat(),
-            'solution_used': solucion_usada,
-            'was_effective': fue_efectiva,
-            'user_rating': rating,
-            'user_comments': comentarios,
-            'processed_by': 'CasinoPro'
-        }
-        
-        self.user_feedback[pregunta_hash].append(entrada_feedback)
-        
-        # Actualizar estadísticas de patrones aprendidos
-        if pregunta_hash in self.learned_patterns:
-            if fue_efectiva:
-                self.learned_patterns[pregunta_hash]['success_count'] += 1
-                self.learned_patterns[pregunta_hash]['confidence'] = min(0.98, self.learned_patterns[pregunta_hash]['confidence'] + 0.05)
-            else:
-                self.learned_patterns[pregunta_hash]['failure_count'] += 1
-                self.learned_patterns[pregunta_hash]['confidence'] = max(0.30, self.learned_patterns[pregunta_hash]['confidence'] - 0.10)
-        
-        self.save_learned_data()
-        return True
+        return respuesta_local
     
     def _detectar_tipo_problema(self, pregunta):
-        """Detectar tipo de problema basado en palabras clave - MEJORADA GENERAL"""
+        """Detectar tipo de problema basado en palabras clave"""
         pregunta_lower = pregunta.lower()
         
-        # DETECCIÓN MEJORADA PARA PROCEDIMIENTOS ESPECÍFICOS
-        procedimientos_especificos = {
-            # PROCEDIMIENTOS VERTEX
-            'ram clear': 'vertex_ram_clear',
-            'ramclear': 'vertex_ram_clear', 
-            'clear ram': 'vertex_ram_clear',
-            'reset base de datos': 'vertex_ram_clear',
-            'formatear vertex': 'vertex_ram_clear',
-            'limpiar ram': 'vertex_ram_clear',
-            
-            'configurar ip vertex': 'vertex_config_ip',
-            'cambiar ip vertex': 'vertex_config_ip',
-            'ip vertex': 'vertex_config_ip',
-            'configurar red vertex': 'vertex_config_ip',
-            'red vertex': 'vertex_config_ip',
-            
-            'jurisdicción vertex': 'vertex_jurisdiccion',
-            'cambiar jurisdicción': 'vertex_jurisdiccion',
-            'configurar argentina': 'vertex_jurisdiccion',
-            'buenos aires vertex': 'vertex_jurisdiccion',
-            
-            'agregar egm': 'vertex_agregar_egm',
-            'añadir máquina': 'vertex_agregar_egm',
-            'conectar helix xt': 'vertex_agregar_egm',
-            'asociar máquina': 'vertex_agregar_egm',
-            
-            'lightning link': 'vertex_lightning_link',
-            'configurar progresivo': 'vertex_lightning_link',
-            'progresivo lighting': 'vertex_lightning_link',
-            
-            # PROCEDIMIENTOS GENERALES
-            'calibrar touch': 'touch_no_responde',
-            'calibración pantalla': 'touch_no_responde',
-            'reset touch': 'touch_no_responde',
-            
-            'calibrar aceptador': 'rechaza_billetes',
-            'calibración billetes': 'rechaza_billetes',
-            'configurar aceptador': 'rechaza_billetes',
-            
-            'reset fábrica': 'error_sistema',
-            'restaurar configuración': 'error_sistema',
-            'formatear máquina': 'error_sistema',
-            
-            'actualizar firmware': 'error_sistema',
-            'upgrade software': 'error_sistema',
-            'instalar actualización': 'error_sistema',
-            
-            'limpiar ventiladores': 'sobrecalentamiento',
-            'limpieza filtros': 'sobrecalentamiento',
-            'mantenimiento térmico': 'sobrecalentamiento',
-            
-            'configurar red': 'problema_red',
-            'cambiar ip': 'problema_red',
-            'conexión network': 'problema_red',
-            
-            'test sonido': 'problema_audio',
-            'configurar audio': 'problema_audio',
-            'problema altavoz': 'problema_audio',
-            
-            'calibrar hopper': 'problema_pagos',
-            'configurar pagos': 'problema_pagos',
-            'test dispensación': 'problema_pagos'
+        # Palabras clave para cada tipo de problema
+        keywords = {
+            'no_enciende': ['no enciende', 'no prende', 'sin energía', 'no power', 'apagada'],
+            'comunicacion_falla': ['comunicación', 'mdb', 'rs232', 'conexión', 'network'],
+            'touch_no_responde': ['touch', 'pantalla', 'no responde', 'calibración'],
+            'rechaza_billetes': ['billete', 'rechaza', 'aceptador', 'validator'],
+            'sobrecalentamiento': ['calor', 'sobrecalentamiento', 'ventilador', 'temperatura'],
+            'vertex_no_enciende': ['vertex no enciende', 'vertex power'],
+            'vertex_comunicacion': ['vertex ip', '192.168.50.2', 'vertex network'],
+            'vertex_database': ['vertex database', 'ram clear', 'base datos']
         }
         
-        # Buscar procedimientos específicos primero (más precisos)
-        for keyword, procedimiento in procedimientos_especificos.items():
-            if keyword in pregunta_lower:
-                return procedimiento
-        
-        # PROBLEMAS VERTEX CONTROLLER - DETECCIÓN MEJORADA
-        vertex_keywords = ['vertex', 'controlador progresivo', 'banco progresivo', 'helix xt', 'progressive', 'vertex 3.5', 'vertex 4.0', 'vertex controller', 'progresivo']
-        if any(palabra in pregunta_lower for palabra in vertex_keywords):
-            if any(palabra in pregunta_lower for palabra in ['no enciende', 'apagado', 'power', 'no prende', 'no arranca']):
-                return 'vertex_no_enciende'
-            elif any(palabra in pregunta_lower for palabra in ['comunicación', 'conexión', 'network', 'ip', 'red', 'no comunica']):
-                return 'vertex_comunicacion'
-            elif any(palabra in pregunta_lower for palabra in ['base datos', 'database', 'passed', 'disco', 'hard drive']):
-                return 'vertex_database'
-            elif any(palabra in pregunta_lower for palabra in ['jurisdicción', 'argentina', 'buenos aires', 'configuración', 'jurisdiction']):
-                return 'vertex_jurisdiccion'
-            else:
-                return 'vertex_general'
-        
-        # DETECCIÓN MEJORADA DE PROBLEMAS GENERALES
-        problemas = {
-            'no_enciende': ['no enciende', 'apagado', 'sin luz', 'no prende', 'no arranca', 'no power', 'sin energía', 'no da señal', 'muerta'],
-            'comunicacion_falla': ['comunicación', 'mdb', 'rs232', 'no comunica', 'protocolo', 'sas', 'network', 'conexión', 'desconectado', 'offline'],
-            'touch_no_responde': ['touch', 'pantalla', 'calibración', 'toque', 'no responde', 'táctil', 'display', 'pantalla táctil', 'touchscreen'],
-            'rechaza_billetes': ['rechaza', 'billete', 'no acepta', 'efectivo', 'aceptador', 'validator', 'bill', 'dinero', 'cash', 'scn', 'uba'],
-            'sobrecalentamiento': ['calor', 'sobrecalienta', 'temperatura', 'caliente', 'ventilador', 'therm', 'hot', 'recalentamiento', 'fans'],
-            'error_sistema': ['error', 'código', 'led', 'falla', 'bios', 'post', 'boot', 'crash', 'bloqueo', 'freeze', 'congelado'],
-            'problema_audio': ['sonido', 'audio', 'altavoz', 'speaker', 'mute', 'silenci', 'volumen', 'beep', 'tono'],
-            'problema_red': ['red', 'network', 'internet', 'wifi', 'ethernet', 'conexión', 'ip', 'dns', 'router', 'switch'],
-            'problema_pagos': ['jackpot', 'premio', 'pago', 'pay', 'winner', 'hopper', 'dispensador', 'monedas', 'coins', 'payout'],
-            'problema_botones': ['botón', 'button', 'tecla', 'key', 'switch', 'control', 'mando', 'no funciona botón']
-        }
-        
-        # Buscar problemas generales
-        for problema, keywords in problemas.items():
-            if any(keyword in pregunta_lower for keyword in keywords):
+        for problema, palabras in keywords.items():
+            if any(palabra in pregunta_lower for palabra in palabras):
                 return problema
         
-        # Si no se encuentra ningún patrón específico
-        return 'general'
+        return 'desconocido'
     
-    def _generar_respuesta_casinopro(self, tipo_problema, datos_maquina, pregunta, contexto):
-        """Generar respuesta con el estilo y conocimiento de CasinoPro - MEJORADA"""
-        
-        # Primero analizar la pregunta para determinar contexto
-        es_sobre_aceptador = any(palabra in pregunta.lower() for palabra in [
-            'aceptador', 'validator', 'billete', 'bill', 'efectivo', 'cash', 'scn', 'uba'
-        ])
-        
-        # DETECCIÓN ESPECIAL PARA VERTEX CONTROLLER
-        es_sobre_vertex = any(palabra in pregunta.lower() for palabra in [
-            'vertex', 'controlador progresivo', 'banco progresivo', 'helix xt', 'progressive'
-        ])
-        
+    def _generar_respuesta_casinopro(self, pregunta, tipo_problema, datos_maquina):
+        """Generar respuesta usando el sistema local"""
         if tipo_problema in self.knowledge_base['problemas_comunes']:
             problema = self.knowledge_base['problemas_comunes'][tipo_problema]
             
-            # Incrementar contador de uso
-            problema['usage_count'] += 1
-            
-            respuesta = f"""
-            🎰 **{self.personalidad['nombre']}** - **DIAGNÓSTICO ESPECIALIZADO**
-            
-            🎯 **PROBLEMA IDENTIFICADO**: {problema['diagnostico']}
-            📋 **NIVEL DE PRIORIDAD**: {problema['prioridad']}
-            🎓 **CONFIANZA DEL DIAGNÓSTICO**: {problema['confidence']*100:.0f}%
-            📊 **EXPERIENCIA ACUMULADA**: {problema['usage_count']} casos similares
-            
-            🔧 **PROCEDIMIENTO TÉCNICO RECOMENDADO**:
-            """
+            respuesta = f"**🔧 {problema['diagnostico']}**\n\n"
+            respuesta += f"**Prioridad:** {problema['prioridad']}\n\n"
+            respuesta += "**Pasos de solución:**\n"
             
             for paso in problema['pasos']:
-                respuesta += f"\n{paso}"
-            
-            # AGREGAR CONOCIMIENTO ESPECÍFICO VERTEX CONTROLLER
-            if es_sobre_vertex:
-                respuesta += "\n\n🎰 **CONOCIMIENTO ESPECÍFICO VERTEX CONTROLLER**:"
-                conocimiento_vertex = self.knowledge_base['vertex_controller']
+                respuesta += f"{paso}\n"
                 
-                if '3.5' in pregunta.lower():
-                    for area, info in conocimiento_vertex['vertex_3.5'].items():
-                        respuesta += f"\n• **{area.title()}**: {info}"
-                elif '4.0' in pregunta.lower():
-                    for area, info in conocimiento_vertex['vertex_4.0'].items():
-                        respuesta += f"\n• **{area.title()}**: {info}"
-                
-                # Agregar procedimientos críticos
-                respuesta += "\n\n🔧 **PROCEDIMIENTOS CRÍTICOS VERTEX**:"
-                for proc, desc in conocimiento_vertex['procedimientos_criticos'].items():
-                    respuesta += f"\n• **{proc.replace('_', ' ').title()}**: {desc}"
+            respuesta += f"\n**Confianza del diagnóstico:** {problema['confidence']*100}%"
             
-            # Agregar conocimiento específico solo si es relevante
-            elif datos_maquina and es_sobre_aceptador:
-                fabricante = datos_maquina.get('fabricante', '').lower()
-                for fab_key, fab_data in self.knowledge_base['fabricantes_especificos'].items():
-                    if fab_key in fabricante:
-                        respuesta += f"\n\n💡 **CONOCIMIENTO {fab_key.upper()}**:"
-                        for modelo, consejo in fab_data.items():
-                            if any(palabra in pregunta.lower() for palabra in [modelo, fab_key]):
-                                respuesta += f"\n• **{modelo.replace('_', ' ').title()}**: {consejo}"
-            
-            # Agregar conocimiento general si no es específico de aceptador
-            if not es_sobre_aceptador and not es_sobre_vertex:
-                respuesta += f"\n\n💡 **CONOCIMIENTO GENERAL MÁQUINAS CASINO**:"
-                conocimiento_general = self.knowledge_base['fabricantes_especificos']['general']
-                for area, consejo in conocimiento_general.items():
-                    respuesta += f"\n• **{area.replace('_', ' ').title()}**: {consejo}"
-            
-            # Contexto adicional personalizado
-            if contexto:
-                respuesta += f"\n\n📝 **ANÁLISIS DE CONTEXTO**: {contexto}"
-            
-            # Firma de CasinoPro
-            respuesta += f"\n\n---\n*Diagnóstico generado por {self.personalidad['nombre']} v{self.version} - DeepSeek AI*"
-            respuesta += f"\n*Código IA: {self.codigo_ia}*"
-            
-            return respuesta
-        
         else:
-            # Respuesta para problemas generales con estilo CasinoPro
-            return f"""
-            🎰 **{self.personalidad['nombre']}** - **ANÁLISIS TÉCNICO AVANZADO**
-            
-            🔍 **EVALUACIÓN INICIAL**:
-            Basado en mi experiencia especializada, recomiendo el siguiente enfoque:
-            
-            1. 🔄 **VERIFICACIÓN SISTEMÁTICA**:
-               • Comenzar por alimentación y conexiones físicas
-               • Revisar configuración básica del sistema
-               • Consultar códigos de error específicos del fabricante
-            
-            2. 🛠️ **ENFOQUE METODOLÓGICO**:
-               • Documentar comportamiento exacto de la falla
-               • Verificar condiciones ambientales operativas
-               • Revisar logs del sistema si están disponibles
-            
-            3. 💡 **PRÓXIMOS PASOS RECOMENDADOS**:
-               • Proporcionar códigos de error LED si están presentes
-               • Describir secuencia exacta cuando ocurre el problema
-               • Especificar si el problema es intermitente o constante
-            
-            📝 **CONTEXTO CONSIDERADO**: {contexto}
-            
-            🎓 **SISTEMA DE APRENDIZAJE ACTIVO** - Esta consulta contribuirá a mejorar diagnósticos futuros
-            
-            ---
-            *Análisis generado por {self.personalidad['nombre']} v{self.version} - DeepSeek AI*
-            *Código IA: {self.codigo_ia}*
-            """
-    
-    def _formatear_respuesta_aprendida(self, patron):
-        """Formatear respuesta de patrones aprendidos con estilo CasinoPro"""
-        return f"""
-        🎰 **{self.personalidad['nombre']}** - **DIAGNÓSTICO CON EXPERIENCIA APRENDIDA**
-        
-        🧠 **PATRÓN RECONOCIDO**: He identificado un problema similar en mi base de conocimiento
-        🎓 **CONFIANZA DEL APRENDIZAJE**: {patron['confidence']*100:.0f}%
-        📊 **EXPERIENCIA ACUMULADA**: {patron['usage_count']} consultas similares
-        📅 **PRIMERA DETECCIÓN**: {patron['first_seen'][:10]}
-        
-        💡 **BASADO EN EXPERIENCIA ACUMULADA**, recomiendo:
-        
-        1. 🔧 Aplicar el procedimiento estándar para este tipo de falla
-        2. 📋 Considerar soluciones validadas en casos anteriores  
-        3. 🎯 Adaptar el enfoque al contexto específico de tu máquina
-        
-        📈 **ESTADÍSTICAS DE EFECTIVIDAD**:
-        • ✅ Éxitos confirmados: {patron.get('success_count', 0)}
-        • ❌ Ajustes requeridos: {patron.get('failure_count', 0)}
-        
-        🎓 **MI SISTEMA MEJORA CONTINUAMENTE** - Tu experiencia enriquece el conocimiento colectivo
-        
-        ---
-        *Diagnóstico aprendido por {self.personalidad['nombre']} v{self.version} - DeepSeek AI*
-        """
-    
-    def obtener_estadisticas(self):
-        """Obtener estadísticas de aprendizaje de CasinoPro"""
-        total_patrones = len(self.learned_patterns)
-        total_conversaciones = len(self.conversation_memory)
-        total_feedback = sum(len(fb) for fb in self.user_feedback.values())
-        
-        # Calcular confianza promedio
-        confianza_promedio = 0
-        if self.learned_patterns:
-            confianza_promedio = sum(p['confidence'] for p in self.learned_patterns.values()) / len(self.learned_patterns)
-        
-        return {
-            'total_patrones': total_patrones,
-            'total_conversaciones': total_conversaciones,
-            'total_feedback': total_feedback,
-            'confianza_promedio': confianza_promedio,
-            'ultimo_aprendizaje': self.conversation_memory[-1]['timestamp'] if self.conversation_memory else 'Nunca',
-            'version': self.version,
-            'nombre': self.nombre,
-            'ia_modelo': self.ia_modelo,
-            'codigo_ia': self.codigo_ia
-        }
-    
-    def obtener_info_sistema(self):
-        """Obtener información del sistema CasinoPro"""
-        return {
-            'nombre': self.personalidad['nombre'],
-            'ia_modelo': self.personalidad['ia_modelo'],
-            'version': self.version,
-            'titulo': self.personalidad['titulo'],
-            'eslogan': self.personalidad['eslogan'],
-            'caracteristicas': self.personalidad['caracteristicas'],
-            'emoji_firma': self.personalidad['emoji_firma'],
-            'saludo': self.personalidad['saludo'],
-            'codigo_ia': self.codigo_ia
-        }
-
-# ==================== SISTEMA DE DIAGNÓSTICO CON CASINOPRO AI ====================
-class DiagnosticSystemWithCasinoPro:
-    def __init__(self, db):
-        self.db = db
-        self.casinopro_ai = CasinoProAISystem()
-    
-    def obtener_diagnostico_mejorado(self, pregunta, aceptador_seleccionado, contexto_adicional=""):
-        """Diagnóstico potenciado con CasinoPro AI"""
-        
-        datos_maquina = self.db.aceptadores.get(aceptador_seleccionado, {}) if aceptador_seleccionado != "No específico" else {}
-        
-        # Obtener análisis de CasinoPro AI - CORREGIDO: No forzar enfoque en aceptador
-        respuesta_experta = self.casinopro_ai.analizar_problema(pregunta, datos_maquina, contexto_adicional)
-        
-        respuesta = {
-            'aceptador': aceptador_seleccionado,
-            'pregunta': pregunta,
-            'analisis_experto': respuesta_experta,
-            'nivel_confianza': "🧠 ALTA - DeepSeek AI Especializado",
-            'prioridad_recomendada': self._obtener_prioridad(pregunta),
-            'datos_maquina': datos_maquina,
-            'sistema_ai': self.casinopro_ai
-        }
+            # Respuesta genérica para problemas no identificados
+            respuesta = f"**🤔 Análisis de: '{pregunta}'**\n\n"
+            respuesta += "**Sistema CasinoPro Local**\n\n"
+            respuesta += "**Recomendaciones generales:**\n"
+            respuesta += "1. 🔍 Verificar conexiones de alimentación\n"
+            respuesta += "2. 🔌 Revisar todos los conectores\n"
+            respuesta += "3. 🔄 Realizar reinicio completo\n"
+            respuesta += "4. 📟 Consultar códigos de error en display\n"
+            respuesta += "5. 🔧 Contactar soporte técnico especializado\n\n"
+            respuesta += "💡 **Sugerencia:** Configurá tu API Key de DeepSeek en el sidebar para obtener diagnósticos más precisos."
         
         return respuesta
     
-    def _obtener_prioridad(self, pregunta):
-        pregunta_lower = pregunta.lower()
-        if any(palabra in pregunta_lower for palabra in ['no enciende', 'incendio', 'humo', 'quemado', 'llamas']):
-            return "🚨 URGENTE - Atender inmediatamente"
-        elif any(palabra in pregunta_lower for palabra in ['no funciona', 'error crítico', 'pantalla negra', 'no bootea']):
-            return "🔴 ALTA PRIORIDAD - Menos de 2 horas"
-        else:
-            return "🟡 PRIORIDAD MEDIA - Atender durante el día"
-
-# ==================== BASE DE DATOS COMPLETA CON 22+ MÁQUINAS ====================
-class CasinoProCompleteDB:
-    def __init__(self):
-        self.aceptadores = {
-            "MEI SCN66": {
-                "fabricante": "Crane Payment Innovations",
-                "tipo": "Validador de Billetes",
-                "voltaje": "+24V DC ±10%",
-                "comunicacion": "MDB, ICP, RS-232, USB"
-            },
-            "JCM UBA-10": {
-                "fabricante": "JCM Global",
-                "tipo": "Aceptador Universal", 
-                "voltaje": "+24V DC ±15%",
-                "comunicacion": "MDB, ICP, RS-232"
-            },
-            "MEI CashFlow 7000": {
-                "fabricante": "Crane Payment Innovations",
-                "tipo": "Aceptador Inteligente",
-                "voltaje": "+24V DC ±5%",
-                "comunicacion": "MDB, Ethernet, USB"
-            },
-            "Aristocrat NV9": {
-                "fabricante": "Aristocrat",
-                "tipo": "Validación Avanzada",
-                "voltaje": "+24V DC ±8%",
-                "comunicacion": "MDB, SAS, RS-232"
-            },
-            "MEI SC Advance": {
-                "fabricante": "Crane Payment Innovations", 
-                "tipo": "Aceptador de Monedas",
-                "voltaje": "+24V DC ±12%",
-                "comunicacion": "MDB, RS-232"
-            }
-        }
+    def obtener_diagnostico_mejorado(self, problema, maquina=None):
+        """Obtener diagnóstico mejorado usando DeepSeek"""
+        st.sidebar.info("🎯 DIAGNOSTICO_MEJORADO: Iniciando...")
         
-        self.maquinas = {
-            # ARISTOCRAT
-            "Aristocrat Helix": {"fabricante": "Aristocrat", "año": 2022},
-            "Aristocrat Oasis": {"fabricante": "Aristocrat", "año": 2021},
-            "Aristocrat Edge X": {"fabricante": "Aristocrat", "año": 2023},
-            "Aristocrat Edge C": {"fabricante": "Aristocrat", "año": 2022},
-            "Aristocrat MK6": {"fabricante": "Aristocrat", "año": 2020},
-            "Aristocrat MK5": {"fabricante": "Aristocrat", "año": 2018},
-            "Aristocrat Hyperlink": {"fabricante": "Aristocrat", "año": 2021},
-            "Aristocrat Sirius": {"fabricante": "Aristocrat", "año": 2022},
-            
-            # BALLY
-            "Bally Alpha Pro": {"fabricante": "Bally/SG", "año": 2022},
-            "Bally Alpha 2": {"fabricante": "Bally/SG", "año": 2021},
-            "Bally iView": {"fabricante": "Bally/SG", "año": 2023},
-            "Bally Pro Wave": {"fabricante": "Bally/SG", "año": 2022},
-            "Bally CineVision": {"fabricante": "Bally/SG", "año": 2021},
-            
-            # IGT
-            "IGT Peak": {"fabricante": "IGT", "año": 2023},
-            "IGT PeakBarTop": {"fabricante": "IGT", "año": 2022},
-            "IGT S3000": {"fabricante": "IGT", "año": 2021},
-            "IGT S2000": {"fabricante": "IGT", "año": 2020},
-            "IGT Game King": {"fabricante": "IGT", "año": 2022},
-            "IGT Advantage": {"fabricante": "IGT", "año": 2021},
-            
-            # KONAMI
-            "Konami Concerto": {"fabricante": "Konami", "año": 2022},
-            "Konami KX": {"fabricante": "Konami", "año": 2023},
-            "Konami Helix Core": {"fabricante": "Konami", "año": 2022},
-            "Konami Dimension": {"fabricante": "Konami", "año": 2021},
-            
-            # VERTEX CONTROLLERS - NUEVOS
-            "Vertex Controller 3.5": {"fabricante": "Aristocrat", "año": 2018},
-            "Vertex Controller 4.0": {"fabricante": "Aristocrat", "año": 2020},
-            "Aristocrat Helix XT LCD": {"fabricante": "Aristocrat", "año": 2022},
-            "Aristocrat Helix XT": {"fabricante": "Aristocrat", "año": 2021},
-            
-            # OTHER MANUFACTURERS
-            "Ainsworth A-Star": {"fabricante": "Ainsworth", "año": 2022},
-            "Aruze Oasis": {"fabricante": "Aruze", "año": 2021},
-            "Everi CineLuxe": {"fabricante": "Everi", "año": 2023},
-            "Multimedia Games E32": {"fabricante": "MG", "año": 2022},
-            "Novomatic Gaminator": {"fabricante": "Novomatic", "año": 2021},
-            "WMS Bluebird 2": {"fabricante": "WMS", "año": 2020}
-        }
+        prompt = f"Problema: {problema}"
+        if maquina:
+            prompt += f" | Máquina: {maquina}"
+        
+        prompt += "\n\nPor favor proporciona un diagnóstico técnico detallado con pasos específicos de solución."
+        
+        return self.deepseek_api.consultar_deepseek(prompt, "DIAGNÓSTICO TÉCNICO ESPECIALIZADO")
 
-        # NUEVO: COMPONENTES VERTEX
-        self.componentes_vertex = {
-            "Aristocrat Media Player (AMP)": {"tipo": "Reproductor Multimedia", "conexion": "HDMI"},
-            "Splitter HDMI 8 salidas": {"tipo": "Distribuidor Video", "conexion": "HDMI"},
-            "Switch DHCP Progresivo": {"tipo": "Networking", "puertos": "8+"}
-        }
-
-# ==================== INICIALIZACIÓN ====================
-if 'db' not in st.session_state:
-    st.session_state.db = CasinoProCompleteDB()
-
-if 'diagnostic_system' not in st.session_state:
-    st.session_state.diagnostic_system = DiagnosticSystemWithCasinoPro(st.session_state.db)
-
-if 'current_menu' not in st.session_state:
-    st.session_state.current_menu = "💬 CHAT CASINOPRO"
-
-if 'chat_history' not in st.session_state:
-    st.session_state.chat_history = []
-
-if 'last_question' not in st.session_state:
-    st.session_state.last_question = ""
-    
-if 'show_feedback' not in st.session_state:
-    st.session_state.show_feedback = False
-
-# ==================== INTERFAZ PRINCIPAL CON CHAT ====================
+# ==================== INTERFAZ STREAMLIT ====================
 def main():
-    # Header con información de CasinoPro AI
-    try:
-        info_casinopro = st.session_state.diagnostic_system.casinopro_ai.obtener_info_sistema()
-        saludo = info_casinopro.get('saludo', '¡Hola! Soy CasinoPro, tu especialista en diagnóstico técnico. ¿En qué puedo ayudarte hoy?')
-    except Exception as e:
-        # Fallback en caso de error
-        saludo = '¡Hola! Soy CasinoPro, tu especialista en diagnóstico técnico. ¿En qué puedo ayudarte hoy?'
-        info_casinopro = {
-            'nombre': 'CasinoPro',
-            'ia_modelo': 'DeepSeek AI',
-            'version': '2.3',
-            'titulo': '🎰 CasinoPro - DeepSeek AI Especializado',
-            'eslogan': 'Tu asistente técnico inteligente con DeepSeek AI',
-            'emoji_firma': '🤖🧠',
-            'codigo_ia': 'DEEPSEEK-CP-VTX-8876'
-        }
+    # Inicializar sistema en session state
+    if 'diagnostic_system' not in st.session_state:
+        st.session_state.diagnostic_system = CasinoProAISystem()
+        st.session_state.chat_history = []
     
-    # SIDEBAR CON CONFIGURACIÓN DEEPSEEK
-    with st.sidebar:
-        st.title("🎰 CasinoPro AI")
-        st.markdown("**Sistema de Diagnóstico Inteligente**")
-        
-        # Mostrar configuración de API DeepSeek
-        mostrar_configuracion_api()
-        
-        st.markdown("---")
-        
-        # Información del sistema
-        st.subheader("🤖 Sistema AI")
-        st.markdown(f"**Versión:** {info_casinopro['version']}")
-        st.markdown(f"**Código:** {info_casinopro['codigo_ia']}")
-        
-        try:
-            stats = st.session_state.diagnostic_system.casinopro_ai.obtener_estadisticas()
-            
-            st.metric("📚 Patrones Aprendidos", stats['total_patrones'])
-            st.metric("💬 Consultas Totales", stats['total_conversaciones'])
-            st.metric("⭐ Feedback Recibido", stats['total_feedback'])
-            st.metric("🎓 Confianza Promedio", f"{stats['confianza_promedio']*100:.1f}%")
-            
-            st.info(f"🔄 **v{stats['version']}** - {stats['ia_modelo']}")
-        except:
-            st.metric("📚 Patrones Aprendidos", 0)
-            st.metric("💬 Consultas Totales", 0)
-            st.metric("⭐ Feedback Recibido", 0)
-            st.metric("🎓 Confianza Promedio", "0%")
-            st.info("🔄 **v2.3** - DeepSeek AI - Sistema iniciando...")
-        
-        st.markdown("---")
-        st.subheader("🚀 Características")
-        caracteristicas = [
-            "Tecnología DeepSeek AI integrada",
-            "25+ años de experiencia integrada",
-            "Aprendizaje automático continuo", 
-            "Especialista en Aristocrat, Bally, IGT, Konami",
-            "Conocimiento del manual CPU-4.2.2.X",
-            "Diagnóstico basado en patrones reales",
-            "Especialista en Vertex Controller 3.5/4.0"
-        ]
-        for caracteristica in caracteristicas:
-            st.write(f"• {caracteristica}")
-        
-        # Información Vertex Controller en sidebar
-        st.markdown("---")
-        st.subheader("🎰 Especialidad Vertex")
-        st.write("• Vertex Controller 3.5/4.0")
-        st.write("• Bancos progresivos")
-        st.write("• Configuración Lighting Link")
-        st.write("• Redes progresivas")
-        
-        # Botón para limpiar chat
-        st.markdown("---")
-        if st.button("🗑️ Limpiar Chat", use_container_width=True):
-            st.session_state.chat_history = []
-            st.rerun()
+    # Sidebar con configuración
+    mostrar_configuracion_api()
+    mostrar_debug_info()
     
-    # ÁREA PRINCIPAL
-    st.title(info_casinopro['titulo'])
-    st.markdown(f"**{info_casinopro['eslogan']}**")
+    # Header principal
+    st.title("🎰 CasinoPro - DeepSeek AI System")
+    st.markdown("### Tu asistente técnico especializado en máquinas de casino")
     
+    # Verificar API Key
+    api_key = get_deepseek_api_key()
+    if not api_key:
+        st.warning("⚠️ **Configura tu API Key de DeepSeek en el sidebar para activar la IA avanzada**")
+    else:
+        st.success(f"✅ **DeepSeek AI Activado** - Key: {api_key[:10]}...{api_key[-4:]}")
+    
+    # Área de chat
     st.markdown("---")
+    st.subheader("💬 Chat con CasinoPro AI")
     
-    # Menú principal
-    menu_options = [
-        "💬 CHAT CASINOPRO", 
-        "🤖 DIAGNÓSTICO AVANZADO",
-        "📊 ESTADÍSTICAS AI",
-        "💰 MANUALES",
-        "🎰 MÁQUINAS"
-    ]
-
-    selected_menu = st.selectbox(
-        "📱 **SELECCIONÁ UNA OPCIÓN:**",
-        menu_options,
-        index=menu_options.index(st.session_state.current_menu)
-    )
-
-    if selected_menu != st.session_state.current_menu:
-        st.session_state.current_menu = selected_menu
-        st.rerun()
-
-    st.markdown("---")
+    # Mostrar historial de chat
+    for chat in st.session_state.chat_history:
+        with st.chat_message("user"):
+            st.write(chat['user'])
+        with st.chat_message("assistant"):
+            st.write(chat['assistant'])
     
-    # ==================== INTERFAZ DE CHAT ====================
-    if st.session_state.current_menu == "💬 CHAT CASINOPRO":
-        st.header("💬 Chat con CasinoPro DeepSeek AI")
-        
-        # Verificar estado de API Key
-        api_key = get_deepseek_api_key()
-        if not api_key:
-            st.warning("""
-            🔐 **DeepSeek API No Configurada**
-            
-            Para usar el chat inteligente, necesitás configurar tu API Key en el sidebar.
-            
-            **Pasos:**
-            1. Andá al panel de configuración en el sidebar ←
-            2. Ingresá tu API Key de DeepSeek
-            3. Guardá la configuración
-            
-            Mientras tanto, podés usar el sistema local de diagnóstico.
-            """)
-        else:
-            st.success("✅ **DeepSeek AI Activado** - Chat inteligente disponible")
-        
-        # Área del chat
-        chat_container = st.container()
-        
-        with chat_container:
-            # Mostrar historial del chat
-            for message in st.session_state.chat_history:
-                if message['type'] == 'user':
-                    with st.chat_message("user"):
-                        st.write(f"**Tú:** {message['content']}")
-                        st.caption(f"🕐 {message['timestamp']}")
-                else:
-                    with st.chat_message("assistant"):
-                        st.write(f"**CasinoPro:** {message['content']}")
-                        st.caption(f"🕐 {message['timestamp']}")
-            
-            # Mostrar saludo inicial si no hay historial
-            if not st.session_state.chat_history:
-                with st.chat_message("assistant"):
-                    st.write(f"**CasinoPro:** {saludo}")
-                    st.caption(f"🕐 {datetime.now().strftime('%H:%M')}")
-        
-        # Input de chat
-        st.markdown("---")
-        col1, col2 = st.columns([4, 1])
-        
-        with col1:
-            user_input = st.chat_input("Escribe tu pregunta o problema técnico aquí...")
-        
-        with col2:
-            if st.button("🔄 Nueva Consulta", use_container_width=True):
-                user_input = "Hola, necesito ayuda con un problema técnico"
-        
-        if user_input:
-            # Agregar mensaje del usuario al historial
-            user_message = {
-                'type': 'user',
-                'content': user_input,
-                'timestamp': datetime.now().strftime('%H:%M')
-            }
-            st.session_state.chat_history.append(user_message)
-            
-            # Obtener respuesta de CasinoPro con DeepSeek
-            with st.spinner("🧠 DeepSeek AI analizando..."):
-                try:
-                    respuesta = st.session_state.diagnostic_system.obtener_diagnostico_mejorado(
-                        user_input,
-                        "No específico"
-                    )
-                    
-                    # Formatear respuesta para chat
-                    respuesta_chat = respuesta['analisis_experto']
-                    
-                    # Agregar respuesta al historial
-                    assistant_message = {
-                        'type': 'assistant',
-                        'content': respuesta_chat,
-                        'timestamp': datetime.now().strftime('%H:%M')
-                    }
-                    st.session_state.chat_history.append(assistant_message)
-                    
-                    st.session_state.last_response = respuesta
-                    st.session_state.last_question = user_input
-                    
-                except Exception as e:
-                    # Respuesta de fallback en caso de error
-                    error_message = {
-                        'type': 'assistant',
-                        'content': f"⚠️ Ocurrió un error al procesar tu consulta. Por favor, intentá nuevamente. Error: {str(e)}",
-                        'timestamp': datetime.now().strftime('%H:%M')
-                    }
-                    st.session_state.chat_history.append(error_message)
-                
-            st.rerun()
-        
-        # Sugerencias rápidas
-        st.markdown("---")
-        st.subheader("💡 ¿No sabés por dónde empezar? Probá con:")
-        
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            if st.button("🎰 Vertex no enciende", use_container_width=True):
-                st.session_state.chat_history.append({
-                    'type': 'user', 
-                    'content': 'Mi Vertex Controller 4.0 no enciende, ¿qué puedo hacer?',
-                    'timestamp': datetime.now().strftime('%H:%M')
-                })
-                st.rerun()
-                
-        with col2:
-            if st.button("🔧 Aceptador rechaza", use_container_width=True):
-                st.session_state.chat_history.append({
-                    'type': 'user',
-                    'content': 'El aceptador MEI SCN66 rechaza todos los billetes',
-                    'timestamp': datetime.now().strftime('%H:%M')
-                })
-                st.rerun()
-                
-        with col3:
-            if st.button("📡 Problema de red", use_container_width=True):
-                st.session_state.chat_history.append({
-                    'type': 'user',
-                    'content': 'Las máquinas no se comunican con el sistema central',
-                    'timestamp': datetime.now().strftime('%H:%M')
-                })
-                st.rerun()
+    # Input de usuario
+    user_input = st.chat_input("Escribe tu mensaje aquí...")
     
-    # ==================== DIAGNÓSTICO AVANZADO ====================
-    elif st.session_state.current_menu == "🤖 DIAGNÓSTICO AVANZADO":
-        st.header("🤖 Diagnóstico Avanzado con CasinoPro DeepSeek")
+    if user_input:
+        # Mostrar mensaje del usuario
+        with st.chat_message("user"):
+            st.write(user_input)
         
-        # Verificar estado de API Key
-        api_key = get_deepseek_api_key()
-        if not api_key:
-            st.warning("""
-            🔐 **DeepSeek API No Configurada**
-            
-            Para diagnóstico avanzado con IA, configurá tu API Key en el sidebar.
-            """)
-        else:
-            st.success("✅ **DeepSeek AI Activado** - Diagnóstico avanzado disponible")
+        # Obtener respuesta del sistema
+        with st.chat_message("assistant"):
+            with st.spinner("CasinoPro AI pensando..."):
+                respuesta = st.session_state.diagnostic_system.analizar_problema(user_input)
+                st.write(respuesta)
         
-        # Selección de aceptador (ahora opcional)
-        col1, col2 = st.columns(2)
+        # Guardar en historial
+        st.session_state.chat_history.append({
+            'user': user_input,
+            'assistant': respuesta
+        })
         
-        with col1:
-            aceptador_seleccionado = st.selectbox(
-                "🔧 **SELECCIONÁ EL ACEPTADOR (Opcional):**",
-                ["No específico"] + list(st.session_state.db.aceptadores.keys())
-            )
-        
-        with col2:
-            # Nueva selección de tipo de máquina
-            tipo_consulta = st.selectbox(
-                "🎯 **TIPO DE CONSULTA:**",
-                ["Problema general", "Aceptador específico", "Máquina completa", "Software/Sistema", "Vertex Controller"]
-            )
-        
-        # Información de la máquina seleccionada solo si es relevante
-        if aceptador_seleccionado != "No específico":
-            info_maquina = st.session_state.db.aceptadores[aceptador_seleccionado]
-            with st.expander("📋 Información del equipo seleccionado"):
-                st.write(f"**Fabricante**: {info_maquina['fabricante']}")
-                st.write(f"**Tipo**: {info_maquina['tipo']}")
-                st.write(f"**Voltaje**: {info_maquina['voltaje']}")
-                st.write(f"**Comunicación**: {info_maquina['comunicacion']}")
-        
-        # Información específica para Vertex Controller
-        if tipo_consulta == "Vertex Controller":
-            with st.expander("🎰 INFORMACIÓN VERTEX CONTROLLER", expanded=True):
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.write("**Vertex 3.5**")
-                    st.write("• 1 puerto USB (requiere HUB)")
-                    st.write("• Disco SATA + Plugin CF")
-                    st.write("• Credenciales: admin/Password1")
-                
-                with col2:
-                    st.write("**Vertex 4.0**")
-                    st.write("• Display Port/VGA")
-                    st.write("• Fuente externa")
-                    st.write("• Credenciales: Retail1/Retail1")
-                
-                st.info("**IP Configuración**: 192.168.50.2 | Mask: 255.255.255.0 | Gateway: 192.168.50.1")
-        
-        # Área de diagnóstico
-        st.markdown("---")
-        st.subheader("💬 Consulta de Diagnóstico")
-        
-        pregunta_usuario = st.text_area(
-            "**Describí el problema técnico:**",
-            placeholder="Ej: Mi Vertex Controller 4.0 no comunica con las Helix XT después del cambio de IP...",
-            height=120,
-            key="pregunta_casinopro"
-        )
-        
-        contexto_adicional = st.text_area(
-            "**Contexto adicional (opcional):**",
-            placeholder="Ej: El problema empezó después de una actualización, solo ocurre con ciertas EGMs...",
-            height=80
-        )
-        
-        col1, col2 = st.columns([3, 1])
-        
-        with col1:
-            if st.button("🎰🔧 EJECUTAR DIAGNÓSTICO DEEPSEEK AI", type="primary", use_container_width=True):
-                if pregunta_usuario.strip():
-                    st.session_state.last_question = pregunta_usuario
-                    st.session_state.show_feedback = False
-                    
-                    with st.spinner("🧠 DeepSeek AI analizando + aprendiendo..."):
-                        import time
-                        time.sleep(1)
-                        
-                        # Si no se seleccionó aceptador específico, pasar None
-                        aceptador_para_analisis = aceptador_seleccionado if aceptador_seleccionado != "No específico" else "No específico"
-                        
-                        try:
-                            respuesta = st.session_state.diagnostic_system.obtener_diagnostico_mejorado(
-                                pregunta_usuario,
-                                aceptador_para_analisis, 
-                                contexto_adicional
-                            )
-                            
-                            st.session_state.last_response = respuesta
-                            st.session_state.show_feedback = True
-                            
-                            # Mostrar resultados
-                            st.markdown("---")
-                            st.subheader("🎯 **Resultados del Diagnóstico CasinoPro DeepSeek**")
-                            
-                            # Información básica
-                            col1, col2 = st.columns(2)
-                            with col1:
-                                if aceptador_seleccionado != "No específico":
-                                    st.write(f"**🤖 Aceptador:** {respuesta['aceptador']}")
-                                    st.write(f"**🏭 Fabricante:** {respuesta['datos_maquina'].get('fabricante', 'N/A')}")
-                                else:
-                                    st.write(f"**🎯 Tipo de consulta:** {tipo_consulta}")
-                                    st.write(f"**🔧 Equipo:** Consulta general")
-                            with col2:
-                                st.write(f"**🎯 Confianza:** {respuesta['nivel_confianza']}")
-                                st.write(f"**📋 Prioridad:** {respuesta['prioridad_recomendada']}")
-                            
-                            # Análisis de CasinoPro AI
-                            st.markdown("### 🧠 **Análisis de DeepSeek AI**")
-                            st.info(respuesta['analisis_experto'])
-                            
-                            # Timestamp
-                            st.markdown("---")
-                            st.caption(f"🕐 Diagnóstico generado: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-                            
-                        except Exception as e:
-                            st.error(f"❌ Error al procesar el diagnóstico: {str(e)}")
-                        
-                else:
-                    st.warning("⚠️ Por favor, describí el problema técnico")
-        
-        with col2:
-            if st.session_state.show_feedback:
-                st.success("✅ **Consulta procesada**")
-                st.info("⭐ Danos tu feedback abajo")
-        
-        # ==================== SISTEMA DE FEEDBACK ====================
-        if st.session_state.show_feedback:
-            st.markdown("---")
-            st.subheader("⭐ Ayudá a CasinoPro a Mejorar")
-            
-            col1, col2, col3 = st.columns(3)
-            
-            with col1:
-                if st.button("✅ Sí, muy acertado", use_container_width=True, key="fb_yes"):
-                    st.session_state.diagnostic_system.casinopro_ai.agregar_feedback(
-                        st.session_state.last_question,
-                        st.session_state.last_response['analisis_experto'],
-                        fue_efectiva=True
-                    )
-                    st.success("🎉 ¡Gracias! CasinoPro aprendió de tu experiencia")
-                    st.session_state.show_feedback = False
-            
-            with col2:
-                if st.button("❌ No fue preciso", use_container_width=True, key="fb_no"):
-                    st.session_state.diagnostic_system.casinopro_ai.agregar_feedback(
-                        st.session_state.last_question,
-                        st.session_state.last_response['analisis_experto'],
-                        fue_efectiva=False
-                    )
-                    st.error("📝 CasinoPro ajustará sus diagnósticos. Contanos más...")
-                    st.session_state.show_feedback = False
-            
-            with col3:
-                if st.button("⭐ Calificar Diagnóstico", use_container_width=True, key="fb_rate"):
-                    with st.expander("💬 Danos tu opinión detallada", expanded=True):
-                        calificacion = st.slider("Calificación del diagnóstico:", 1, 5, 3, key="rating_slider")
-                        comentarios = st.text_area("Comentarios para mejorar:", placeholder="¿Qué funcionó bien? ¿Qué podría mejorar CasinoPro?", key="comments_area")
-                        
-                        if st.button("🎰 Enviar Calificación", key="send_rating"):
-                            st.session_state.diagnostic_system.casinopro_ai.agregar_feedback(
-                                st.session_state.last_question,
-                                st.session_state.last_response['analisis_experto'],
-                                rating=calificacion,
-                                comentarios=comentarios
-                            )
-                            st.success(f"⭐ ¡Gracias por tu calificación de {calificacion}/5! CasinoPro mejorará")
-                            st.session_state.show_feedback = False
-    
-    # ==================== ESTADÍSTICAS DE CASINOPRO AI ====================
-    elif st.session_state.current_menu == "📊 ESTADÍSTICAS AI":
-        st.header("📊 Estadísticas de CasinoPro DeepSeek AI")
-        
-        try:
-            casino_pro = st.session_state.diagnostic_system.casinopro_ai
-            stats = casino_pro.obtener_estadisticas()
-            info = casino_pro.obtener_info_sistema()
-            
-            # Encabezado del sistema
-            st.subheader(f"🎰 {info['nombre']} v{stats['version']}")
-            st.write(f"**{info['eslogan']}**")
-            st.write(f"**🤖 IA:** {stats['ia_modelo']} | **🔧 Código:** {stats['codigo_ia']}")
-            
-            # Métricas principales
-            col1, col2, col3, col4 = st.columns(4)
-            with col1:
-                st.metric("📚 Patrones Aprendidos", stats['total_patrones'])
-            with col2:
-                st.metric("💬 Consultas Totales", stats['total_conversaciones'])
-            with col3:
-                st.metric("⭐ Feedback Recibido", stats['total_feedback'])
-            with col4:
-                st.metric("🎓 Confianza Promedio", f"{stats['confianza_promedio']*100:.1f}%")
-            
-            # Información detallada
-            st.markdown("---")
-            st.subheader("📈 Detalles del Sistema")
-            
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                st.markdown("**📊 Rendimiento del Aprendizaje**")
-                st.write(f"• **Último aprendizaje**: {stats['ultimo_aprendizaje']}")
-                st.write(f"• **Tasa de aprendizaje activo**: {stats['confianza_promedio']*100:.1f}%")
-                st.write(f"• **Efectividad general**: {(stats['confianza_promedio']*100 - 10):.1f}%")
-                st.write(f"• **Tecnología IA**: {stats['ia_modelo']}")
-                
-            with col2:
-                st.markdown("**🎯 Capacidades del Sistema**")
-                for capacidad in info['caracteristicas']:
-                    st.write(f"• {capacidad}")
-            
-            # Patrones aprendidos recientemente
-            st.markdown("---")
-            st.subheader("🧠 Patrones Aprendidos Recientemente")
-            
-            if casino_pro.learned_patterns:
-                # Mostrar los últimos 5 patrones
-                patrones_recientes = list(casino_pro.learned_patterns.items())[-5:]
-                
-                for patron_hash, patron_data in reversed(patrones_recientes):
-                    with st.expander(f"📝 {patron_data['question_pattern'][:50]}..."):
-                        st.write(f"**Tipo de problema**: {patron_data['problem_type']}")
-                        st.write(f"**Fabricante**: {patron_data['machine_type']}")
-                        st.write(f"**Confianza**: {patron_data['confidence']*100:.1f}%")
-                        st.write(f"**Veces usado**: {patron_data['usage_count']}")
-                        st.write(f"**Éxitos**: {patron_data.get('success_count', 0)}")
-                        st.write(f"**Primera detección**: {patron_data['first_seen'][:10]}")
-            else:
-                st.info("🤖 CasinoPro aún está aprendiendo. Realizá consultas para generar patrones.")
-                
-        except Exception as e:
-            st.error(f"❌ Error al cargar las estadísticas: {str(e)}")
-            st.info("💡 Intentá usar el sistema primero para generar datos estadísticos")
-    
-    # ==================== MANUALES ====================
-    elif st.session_state.current_menu == "💰 MANUALES":
-        st.header("💰 Manuales Técnicos")
-        
-        st.success("""
-        **📚 Biblioteca de Manuales CasinoPro**
-        - Documentación técnica especializada
-        - Procedimientos de calibración
-        - Diagramas de conexión
-        - Códigos de error
-        - **MANUALES VERTEX CONTROLLER** ✅
-        """)
-        
-        manuales = {
-            "Aristocrat Helix": "Manual de servicio técnico completo - v4.2.1",
-            "Bally Alpha Pro": "Guía de diagnóstico y reparación - Edición 2023",
-            "IGT Peak": "Manual del operador y técnico - Sistema PEAK",
-            "Konami Concerto": "Documentación técnica Concerto Platform",
-            "MEI SCN66": "Manual de instalación y configuración",
-            "JCM UBA-10": "Guía de mantenimiento preventivo",
-            "Vertex Controller 3.5": "Manual completo armado y configuración",
-            "Vertex Controller 4.0": "Instructivo progresivos Lighting Link",
-            "Vertex Red Progresiva": "Estructura de red y componentes"
-        }
-        
-        col1, col2 = st.columns(2)
-        
-        for i, (manual, descripcion) in enumerate(manuales.items()):
-            with col1 if i % 2 == 0 else col2:
-                with st.container():
-                    st.markdown(f"**{manual}**")
-                    st.write(descripcion)
-                    if st.button(f"📥 Descargar {manual}", key=f"manual_{i}"):
-                        st.success(f"📚 Descargando manual de {manual}...")
-        
-    # ==================== MÁQUINAS ====================
-    elif st.session_state.current_menu == "🎰 MÁQUINAS":
-        st.header("🎰 Catálogo de Máquinas")
-        
-        st.success("""
-        **🏭 Base de Datos de Fabricantes**
-        - Especificaciones técnicas completas
-        - Configuraciones recomendadas
-        - Problemas comunes documentados
-        - **VERTEX CONTROLLERS INCLUIDOS** ✅
-        """)
-        
-        # Mostrar máquinas disponibles - AHORA CON 26+ MÁQUINAS
-        st.subheader(f"📊 Total de máquinas en base de datos: {len(st.session_state.db.maquinas)}")
-        
-        # Agrupar por fabricante
-        fabricantes = {}
-        for maquina, detalles in st.session_state.db.maquinas.items():
-            fabricante = detalles['fabricante']
-            if fabricante not in fabricantes:
-                fabricantes[fabricante] = []
-            fabricantes[fabricante].append((maquina, detalles))
-        
-        # Mostrar por fabricante
-        for fabricante, maquinas_list in fabricantes.items():
-            with st.expander(f"🏭 {fabricante} ({len(maquinas_list)} máquinas)"):
-                for maquina, detalles in maquinas_list:
-                    # Destacar Vertex Controllers
-                    if "Vertex" in maquina:
-                        st.write(f"**🎰 {maquina}** - Año: {detalles['año']} - ✅ **ESPECIALIDAD CASINOPRO**")
-                    else:
-                        st.write(f"**🎰 {maquina}** - Año: {detalles['año']} - ✅ Compatible con CasinoPro")
-        
-        # Mostrar componentes Vertex
-        st.markdown("---")
-        st.subheader("🔧 Componentes Vertex Controller")
-        
-        for componente, info in st.session_state.db.componentes_vertex.items():
-            with st.expander(f"🔌 {componente}"):
-                st.write(f"**Tipo**: {info['tipo']}")
-                st.write(f"**Conexión**: {info['conexion']}")
-                if 'puertos' in info:
-                    st.write(f"**Puertos**: {info['puertos']}")
+        # Limitar historial a 50 mensajes
+        if len(st.session_state.chat_history) > 50:
+            st.session_state.chat_history = st.session_state.chat_history[-50:]
 
 if __name__ == "__main__":
     main()
