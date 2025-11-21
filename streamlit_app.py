@@ -666,7 +666,7 @@ class CasinoProAISystem:
         }
 
     def analizar_problema(self, pregunta_usuario, datos_maquina=None, contexto=""):
-        """Análisis inteligente con DeepSeek AI y sistema local - VERSIÓN MEJORADA"""
+        """Análisis inteligente con DeepSeek AI - VERSIÓN CORREGIDA"""
         
         # Guardar en memoria de conversación
         entrada_conversacion = {
@@ -678,23 +678,33 @@ class CasinoProAISystem:
         }
         self.conversation_memory.append(entrada_conversacion)
         
-        # ✅ VERIFICACIÓN EN TIEMPO REAL de la API Key
+        # ✅ VERIFICACIÓN MEJORADA de la API Key
         api_key_actual = get_deepseek_api_key()
         
+        st.sidebar.info(f"🔍 ANALIZAR_PROBLEMA: API Key detectada: {bool(api_key_actual)}")
+        
         if api_key_actual and api_key_actual.startswith('sk-'):
+            st.sidebar.success("✅ ANALIZAR_PROBLEMA: Usando DeepSeek API")
+            
             # ✅ DEEPSEEK ACTIVO - Usar API real
             contexto_tecnico = self._preparar_contexto_tecnico(datos_maquina, contexto)
+            
+            # ✅ LLAMAR DIRECTAMENTE a DeepSeek
             respuesta_ia = self.deepseek_api.consultar_deepseek(pregunta_usuario, contexto_tecnico)
+            
+            st.sidebar.info(f"🔍 ANALIZAR_PROBLEMA: Respuesta DeepSeek recibida: {len(respuesta_ia) if respuesta_ia else 0} chars")
             
             # Solo si DeepSeek falla completamente, usar sistema local
             if any(error in respuesta_ia for error in ["❌", "⚠️", "⏰", "Error API", "Timeout", "conexión"]):
-                st.sidebar.warning("⚠️ DeepSeek no disponible, usando sistema local...")
+                st.sidebar.warning("⚠️ ANALIZAR_PROBLEMA: DeepSeek falló, usando sistema local")
                 return self._analizar_problema_local(pregunta_usuario, datos_maquina, contexto)
             
-            # ✅ MEJORA: Usar respuesta de DeepSeek para TODO (incluyendo saludos)
+            # ✅ USAR RESPUESTA DE DEEPSEEK
+            st.sidebar.success("✅ ANALIZAR_PROBLEMA: Usando respuesta DeepSeek")
             return self._formatear_respuesta_deepseek_mejorada(respuesta_ia, pregunta_usuario)
         else:
             # ❌ NO HAY API KEY - Usar sistema local
+            st.sidebar.warning("⚠️ ANALIZAR_PROBLEMA: No hay API Key, usando sistema local")
             return self._analizar_problema_local(pregunta_usuario, datos_maquina, contexto)
     
     def _preparar_contexto_tecnico(self, datos_maquina, contexto):
@@ -870,7 +880,7 @@ class CasinoProAISystem:
                 self.learned_patterns[pregunta_hash]['success_count'] += 1
                 self.learned_patterns[pregunta_hash]['confidence'] = min(0.98, self.learned_patterns[pregunta_hash]['confidence'] + 0.05)
             else:
-                self.learned_patterns[preganta_hash]['failure_count'] += 1
+                self.learned_patterns[pregunta_hash]['failure_count'] += 1
                 self.learned_patterns[pregunta_hash]['confidence'] = max(0.30, self.learned_patterns[pregunta_hash]['confidence'] - 0.10)
         
         self.save_learned_data()
@@ -1164,12 +1174,16 @@ class DiagnosticSystemWithCasinoPro:
         self.casinopro_ai = CasinoProAISystem()
     
     def obtener_diagnostico_mejorado(self, pregunta, aceptador_seleccionado, contexto_adicional=""):
-        """Diagnóstico potenciado con CasinoPro AI"""
+        """Diagnóstico potenciado con CasinoPro AI - CON DEBUG"""
+        
+        st.sidebar.info(f"🔍 DIAGNOSTICO_SYSTEM: Pregunta recibida: '{pregunta[:50]}...'")
         
         datos_maquina = self.db.aceptadores.get(aceptador_seleccionado, {}) if aceptador_seleccionado != "No específico" else {}
         
-        # Obtener análisis de CasinoPro AI - CORREGIDO: No forzar enfoque en aceptador
+        # Obtener análisis de CasinoPro AI
+        st.sidebar.info("🔍 DIAGNOSTICO_SYSTEM: Llamando a analizar_problema...")
         respuesta_experta = self.casinopro_ai.analizar_problema(pregunta, datos_maquina, contexto_adicional)
+        st.sidebar.info(f"🔍 DIAGNOSTICO_SYSTEM: Respuesta obtenida: {len(respuesta_experta) if respuesta_experta else 0} chars")
         
         respuesta = {
             'aceptador': aceptador_seleccionado,
