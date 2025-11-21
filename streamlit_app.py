@@ -94,20 +94,45 @@ def mostrar_configuracion_api():
         • Análisis contextual mejorado
         """)
 
+def mostrar_debug_info():
+    """Mostrar información de debug en sidebar"""
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("🔍 Debug Info")
+    
+    # Verificar API Key
+    api_key = get_deepseek_api_key()
+    st.sidebar.write(f"**API Key detectada:** {bool(api_key)}")
+    if api_key:
+        st.sidebar.write(f"**Key:** {api_key[:10]}...{api_key[-4:]}")
+    
+    # Verificar session state
+    st.sidebar.write(f"**Session State Key:** {'deepseek_api_key' in st.session_state}")
+    
+    # Verificar si DeepSeek está activo
+    if 'diagnostic_system' in st.session_state:
+        st.sidebar.write(f"**Sistema AI cargado:** ✅")
+    else:
+        st.sidebar.write(f"**Sistema AI cargado:** ❌")
+
 # ==================== DEEPSEEK API REAL ====================
 class DeepSeekAPI:
     def __init__(self):
-        # ✅ SOLUCIÓN: No almacenar API Key en init, obtenerla en cada consulta
         self.base_url = "https://api.deepseek.com/v1"
         self.model = "deepseek-chat"
     
     def consultar_deepseek(self, pregunta, contexto_tecnico=""):
-        """Consultar la API real de DeepSeek - VERSIÓN CORREGIDA"""
+        """Consultar la API real de DeepSeek - VERSIÓN CON DEBUG"""
         
-        # ✅ OBTENER API KEY EN TIEMPO REAL en cada consulta
+        # ✅ DEBUG: Mostrar información de la API Key
         api_key = get_deepseek_api_key()
+        st.sidebar.info(f"🔍 DEBUG: API Key presente: {bool(api_key)}")
+        
+        if api_key:
+            st.sidebar.info(f"🔍 DEBUG: Key inicia con: {api_key[:10]}...")
         
         if not api_key:
+            debug_msg = "❌ NO HAY API KEY - Usando sistema local"
+            st.sidebar.error(debug_msg)
             return """
             🔐 **Configuración Requerida**
             
@@ -127,7 +152,7 @@ class DeepSeekAPI:
             ¡Una vez configurada, experimentá el poder real de la IA! 🚀
             """
         
-        # PROMPT MEJORADO - Más natural para conversaciones
+        # PROMPT MEJORADO
         system_prompt = f"""
         Eres CasinoPro, un sistema experto en diagnóstico técnico de máquinas de casino con 25+ años de experiencia integrada.
 
@@ -165,13 +190,14 @@ class DeepSeekAPI:
         """
         
         try:
-            # USAR ENDPOINT CORRECTO DE DEEPSEEK
             endpoint = f"{self.base_url}/chat/completions"
+            
+            st.sidebar.info("🔍 DEBUG: Enviando request a DeepSeek...")
             
             response = requests.post(
                 endpoint,
                 headers={
-                    "Authorization": f"Bearer {api_key}",  # ✅ Usar api_key obtenida en tiempo real
+                    "Authorization": f"Bearer {api_key}",
                     "Content-Type": "application/json"
                 },
                 json={
@@ -186,16 +212,20 @@ class DeepSeekAPI:
                             "content": pregunta
                         }
                     ],
-                    "temperature": 0.8,  # Aumentado para respuestas más naturales
+                    "temperature": 0.8,
                     "max_tokens": 2000,
                     "stream": False
                 },
-                timeout=45  # Aumentado timeout
+                timeout=45
             )
+            
+            st.sidebar.info(f"🔍 DEBUG: Status Code: {response.status_code}")
             
             if response.status_code == 200:
                 data = response.json()
-                return data["choices"][0]["message"]["content"]
+                respuesta = data["choices"][0]["message"]["content"]
+                st.sidebar.success("✅ DEBUG: DeepSeek respondió correctamente")
+                return respuesta
             else:
                 error_msg = f"❌ Error API DeepSeek: {response.status_code}"
                 if response.status_code == 401:
@@ -210,14 +240,22 @@ class DeepSeekAPI:
                         error_msg += f" - {error_detail}"
                     except:
                         error_msg += f" - {response.text}"
+                
+                st.sidebar.error(f"🔍 DEBUG: {error_msg}")
                 return error_msg
                 
         except requests.exceptions.Timeout:
-            return "⏰ Timeout - DeepSeek no respondió a tiempo (45s)"
+            error = "⏰ Timeout - DeepSeek no respondió a tiempo (45s)"
+            st.sidebar.error(f"🔍 DEBUG: {error}")
+            return error
         except requests.exceptions.ConnectionError:
-            return "🔌 Error de conexión - Verificá tu internet"
+            error = "🔌 Error de conexión - Verificá tu internet"
+            st.sidebar.error(f"🔍 DEBUG: {error}")
+            return error
         except Exception as e:
-            return f"⚠️ Error inesperado: {str(e)}"
+            error = f"⚠️ Error inesperado: {str(e)}"
+            st.sidebar.error(f"🔍 DEBUG: {error}")
+            return error
 
 # ==================== IA "CASINOPRO" - SISTEMA INTELIGENTE ESPECIALIZADO ====================
 class CasinoProAISystem:
@@ -650,7 +688,7 @@ class CasinoProAISystem:
             
             # Solo si DeepSeek falla completamente, usar sistema local
             if any(error in respuesta_ia for error in ["❌", "⚠️", "⏰", "Error API", "Timeout", "conexión"]):
-                st.warning("⚠️ DeepSeek no disponible, usando sistema local...")
+                st.sidebar.warning("⚠️ DeepSeek no disponible, usando sistema local...")
                 return self._analizar_problema_local(pregunta_usuario, datos_maquina, contexto)
             
             # ✅ MEJORA: Usar respuesta de DeepSeek para TODO (incluyendo saludos)
@@ -832,7 +870,7 @@ class CasinoProAISystem:
                 self.learned_patterns[pregunta_hash]['success_count'] += 1
                 self.learned_patterns[pregunta_hash]['confidence'] = min(0.98, self.learned_patterns[pregunta_hash]['confidence'] + 0.05)
             else:
-                self.learned_patterns[pregunta_hash]['failure_count'] += 1
+                self.learned_patterns[preganta_hash]['failure_count'] += 1
                 self.learned_patterns[pregunta_hash]['confidence'] = max(0.30, self.learned_patterns[pregunta_hash]['confidence'] - 0.10)
         
         self.save_learned_data()
@@ -1289,6 +1327,7 @@ def main():
         
         # Mostrar configuración de API DeepSeek
         mostrar_configuracion_api()
+        mostrar_debug_info()  # ✅ AGREGADO: Debug info en sidebar
         
         st.markdown("---")
         
