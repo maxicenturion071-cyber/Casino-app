@@ -676,9 +676,7 @@ class CasinoProAISystem:
     # ==================== MÉTODOS PRINCIPALES CORREGIDOS ====================
     
     def analizar_problema(self, pregunta_usuario, datos_maquina=None, contexto=""):
-        """Análisis inteligente con DeepSeek AI - VERSIÓN DEFINITIVA"""
-        
-        st.sidebar.error("🎯 INICIANDO ANALIZAR_PROBLEMA")
+        """Análisis inteligente con DeepSeek AI - VERSIÓN CORREGIDA"""
         
         # Guardar en memoria de conversación
         entrada_conversacion = {
@@ -690,17 +688,14 @@ class CasinoProAISystem:
         }
         self.conversation_memory.append(entrada_conversacion)
         
-        # ✅ DEBUG DETALLADO de la API Key
+        # ✅ VERIFICACIÓN MEJORADA de la API Key
         api_key_actual = get_deepseek_api_key()
         
-        st.sidebar.error(f"🔍 DEBUG API KEY: {api_key_actual}")
-        st.sidebar.error(f"🔍 DEBUG API KEY LENGTH: {len(api_key_actual) if api_key_actual else 0}")
-        if api_key_actual:
-            st.sidebar.error(f"🔍 DEBUG STARTS WITH sk-: {api_key_actual.startswith('sk-')}")
+        st.sidebar.info(f"🔍 ANALIZAR_PROBLEMA: API Key detectada: {bool(api_key_actual)}")
         
-        # ✅ FORZAR DEEPSEEK SI HAY ALGO DE API KEY
-        if api_key_actual and len(api_key_actual) > 10:
-            st.sidebar.success("✅ ANALIZAR_PROBLEMA: FORZANDO DeepSeek API")
+        # ✅ SOLO CAMBIO: ELIMINAR LA CONDICIÓN DE PALABRAS TÉCNICAS
+        if api_key_actual and api_key_actual.startswith('sk-'):
+            st.sidebar.success("✅ ANALIZAR_PROBLEMA: Usando DeepSeek API para TODAS las consultas")
             
             # ✅ DEEPSEEK ACTIVO - Usar API real para TODO
             contexto_tecnico = self._preparar_contexto_tecnico(datos_maquina, contexto)
@@ -721,7 +716,7 @@ class CasinoProAISystem:
             
         else:
             # ✅ NO HAY API KEY - Usar sistema local
-            st.sidebar.warning("⚠️ ANALIZAR_PROBLEMA: Sin API Key válida, usando sistema local")
+            st.sidebar.warning("⚠️ ANALIZAR_PROBLEMA: Sin API Key, usando sistema local")
             return self._analizar_problema_local(pregunta_usuario, datos_maquina, contexto)
     
     def _preparar_contexto_tecnico(self, datos_maquina=None, contexto=""):
