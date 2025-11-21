@@ -1,4 +1,4 @@
-# app.py - CASINOPRO CON DEEPSEEK AI - SIN CARPETA .STREAMLIT
+# app.py - CASINOPRO CON DEEPSEEK AI - Sistema de Chat Inteligente
 import streamlit as st
 import pandas as pd
 import json
@@ -9,20 +9,87 @@ import requests
 
 # CONFIGURACIÓN MÓVIL
 st.set_page_config(
-    page_title="CasinoPro DeepSeek AI",
+    page_title="CasinoPro AI System",
     page_icon="🎰", 
     layout="centered",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="expanded"
 )
 
-# ==================== CONFIGURACIÓN DEEPSEEK DIRECTA ====================
-# TU API KEY DIRECTAMENTE EN EL CÓDIGO - NO NECESITA CARPETA
-DEEPSEEK_API_KEY = "sk-18abe409931b4e25ada2e7e9ac6126f3"
+# ==================== CONFIGURACIÓN DEEPSEEK EN SIDEBAR ====================
+def get_deepseek_api_key():
+    """Obtener API Key de forma segura desde sidebar"""
+    # Opción 1: Desde secrets de Streamlit
+    if 'DEEPSEEK_API_KEY' in st.secrets:
+        return st.secrets['DEEPSEEK_API_KEY']
+    
+    # Opción 2: Desde variable de entorno
+    import os
+    if 'DEEPSEEK_API_KEY' in os.environ:
+        return os.environ.get('DEEPSEEK_API_KEY')
+    
+    # Opción 3: Desde session state (input del usuario en sidebar)
+    if 'deepseek_api_key' in st.session_state and st.session_state.deepseek_api_key:
+        return st.session_state.deepseek_api_key
+    
+    return None
+
+def mostrar_configuracion_api():
+    """Mostrar panel de configuración de API en sidebar"""
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("🔐 Configuración DeepSeek API")
+    
+    with st.sidebar.expander("⚙️ Configurar API Key", expanded=True):
+        st.write("**Para activar la IA avanzada, necesitás tu API Key:**")
+        
+        api_key = st.text_input(
+            "DeepSeek API Key:",
+            type="password",
+            placeholder="sk-tu_clave_aqui",
+            help="Obtené tu clave gratis en: https://platform.deepseek.com/api_keys",
+            key="api_key_input"
+        )
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("💾 Guardar Key", use_container_width=True):
+                if api_key and api_key.startswith('sk-'):
+                    st.session_state.deepseek_api_key = api_key
+                    st.success("✅ Clave guardada en sesión")
+                    st.rerun()
+                else:
+                    st.error("❌ Clave inválida - debe empezar con 'sk-'")
+        
+        with col2:
+            if st.button("🗑️ Limpiar", use_container_width=True):
+                if 'deepseek_api_key' in st.session_state:
+                    del st.session_state.deepseek_api_key
+                st.success("🔓 Clave removida")
+                st.rerun()
+        
+        # Mostrar estado actual
+        api_key_actual = get_deepseek_api_key()
+        if api_key_actual:
+            st.success(f"🔑 **API Key Configurada**: {api_key_actual[:10]}...{api_key_actual[-4:]}")
+        else:
+            st.warning("⚠️ **API Key No Configurada**")
+        
+        st.info("""
+        **ℹ️ ¿Cómo obtenerla?**
+        1. Andá a [DeepSeek Platform](https://platform.deepseek.com/api_keys)
+        2. Creá cuenta gratis
+        3. Generá API Key
+        4. Pegala aquí
+        
+        **🎯 Beneficios:**
+        • Respuestas más inteligentes
+        • Diagnósticos avanzados
+        • Análisis contextual mejorado
+        """)
 
 # ==================== DEEPSEEK API REAL ====================
 class DeepSeekAPI:
     def __init__(self):
-        self.api_key = DEEPSEEK_API_KEY  # DIRECTAMENTE DEL CÓDIGO
+        self.api_key = get_deepseek_api_key()
         self.base_url = "https://api.deepseek.com/v1/chat/completions"
         self.model = "deepseek-chat"
     
@@ -30,7 +97,24 @@ class DeepSeekAPI:
         """Consultar la API real de DeepSeek"""
         
         if not self.api_key:
-            return "❌ API Key no configurada"
+            return """
+            🔐 **Configuración Requerida**
+            
+            Para usar las funciones avanzadas de IA, necesitás configurar tu API Key de DeepSeek.
+            
+            **📋 Pasos para configurar:**
+            1. **Andá a:** https://platform.deepseek.com/api_keys
+            2. **Creá una cuenta** (es gratis)
+            3. **Generá una nueva API Key**
+            4. **Pegala en el panel de configuración** en el sidebar ←
+            
+            **🔧 Mientras tanto, podés usar:**
+            • Sistema local de diagnóstico especializado
+            • Base de conocimiento técnico completo
+            • Procedimientos específicos de Vertex Controller
+            
+            ¡Una vez configurada, experimentá el poder real de la IA! 🚀
+            """
         
         # Prompt especializado para CasinoPro
         system_prompt = f"""
@@ -43,6 +127,12 @@ class DeepSeekAPI:
         - Diagnóstico de: no enciende, problemas comunicación MDB/RS-232, touch no responde, rechazo de billetes, sobrecalentamiento
         - Procedimientos técnicos específicos y prioridades de reparación
         - Configuración de redes progresivas y Lightning Link
+
+        CONOCIMIENTO ESPECÍFICO VERTEX:
+        - Vertex 3.5: IP 192.168.50.2, Credenciales admin/Password1, 1 puerto USB
+        - Vertex 4.0: IP 192.168.50.2, Credenciales Retail1/Retail1, fuente externa
+        - Ram Clear: DataBase → BackUp/Restore → Ram Clear
+        - Configuración jurisdicción: Argentina - Buenos Aires
 
         CONTEXTO ESPECÍFICO:
         {contexto_tecnico}
@@ -326,7 +416,7 @@ class CasinoProAISystem:
                         "3. 🔍 Revisar botón frontal - PULSAR Y SOLTAR, no mantener",
                         "4. 📟 Verificar LED de estado del controlador",
                         "5. 🔄 Probar con fuente de respuesto certificada",
-                        "6. ⚠️ NUNCA desconectar de red eléctrica directamente"
+                        "6. ⚠️ NUNCA desconectar de net eléctrica directamente"
                     ],
                     'prioridad': "🚨 URGENTE",
                     'confidence': 0.92,
@@ -1180,15 +1270,20 @@ def main():
             'codigo_ia': 'DEEPSEEK-CP-VTX-8876'
         }
     
-    st.title(info_casinopro['titulo'])
-    st.markdown(f"**{info_casinopro['eslogan']}**")
-    
-    # Sidebar con información del sistema
+    # SIDEBAR CON CONFIGURACIÓN DEEPSEEK
     with st.sidebar:
-        st.header(f"🎰 {info_casinopro['nombre']} AI")
-        st.markdown(f"**🤖 IA:** {info_casinopro['ia_modelo']}")
-        st.markdown(f"**🚀 Versión:** {info_casinopro['version']}")
-        st.markdown(f"**🔧 Código:** {info_casinopro['codigo_ia']}")
+        st.title("🎰 CasinoPro AI")
+        st.markdown("**Sistema de Diagnóstico Inteligente**")
+        
+        # Mostrar configuración de API DeepSeek
+        mostrar_configuracion_api()
+        
+        st.markdown("---")
+        
+        # Información del sistema
+        st.subheader("🤖 Sistema AI")
+        st.markdown(f"**Versión:** {info_casinopro['version']}")
+        st.markdown(f"**Código:** {info_casinopro['codigo_ia']}")
         
         try:
             stats = st.session_state.diagnostic_system.casinopro_ai.obtener_estadisticas()
@@ -1198,7 +1293,7 @@ def main():
             st.metric("⭐ Feedback Recibido", stats['total_feedback'])
             st.metric("🎓 Confianza Promedio", f"{stats['confianza_promedio']*100:.1f}%")
             
-            st.info(f"🔄 **v{stats['version']}** - {stats['ia_modelo']} - Último aprendizaje: {stats['ultimo_aprendizaje'][:16]}")
+            st.info(f"🔄 **v{stats['version']}** - {stats['ia_modelo']}")
         except:
             st.metric("📚 Patrones Aprendidos", 0)
             st.metric("💬 Consultas Totales", 0)
@@ -1234,6 +1329,10 @@ def main():
             st.session_state.chat_history = []
             st.rerun()
     
+    # ÁREA PRINCIPAL
+    st.title(info_casinopro['titulo'])
+    st.markdown(f"**{info_casinopro['eslogan']}**")
+    
     st.markdown("---")
     
     # Menú principal
@@ -1261,14 +1360,23 @@ def main():
     if st.session_state.current_menu == "💬 CHAT CASINOPRO":
         st.header("💬 Chat con CasinoPro DeepSeek AI")
         
-        st.success("""
-        **🧠 CHAT CON DEEPSEEK AI**
-        - Inteligencia artificial real integrada
-        - Diagnósticos técnicos avanzados
-        - Respuestas contextuales y naturales
-        - Especialidad en Vertex Controller
-        - Sistema híbrido inteligente
-        """)
+        # Verificar estado de API Key
+        api_key = get_deepseek_api_key()
+        if not api_key:
+            st.warning("""
+            🔐 **DeepSeek API No Configurada**
+            
+            Para usar el chat inteligente, necesitás configurar tu API Key en el sidebar.
+            
+            **Pasos:**
+            1. Andá al panel de configuración en el sidebar ←
+            2. Ingresá tu API Key de DeepSeek
+            3. Guardá la configuración
+            
+            Mientras tanto, podés usar el sistema local de diagnóstico.
+            """)
+        else:
+            st.success("✅ **DeepSeek AI Activado** - Chat inteligente disponible")
         
         # Área del chat
         chat_container = st.container()
@@ -1377,17 +1485,20 @@ def main():
                 })
                 st.rerun()
     
-    # ==================== DIAGNÓSTICO AVANZADO (MANTENIDO) ====================
+    # ==================== DIAGNÓSTICO AVANZADO ====================
     elif st.session_state.current_menu == "🤖 DIAGNÓSTICO AVANZADO":
         st.header("🤖 Diagnóstico Avanzado con CasinoPro DeepSeek")
         
-        st.info("""
-        **🔧 MODO DIAGNÓSTICO AVANZADO**
-        - Selección específica de equipos
-        - Configuración detallada
-        - Análisis técnico profundo con DeepSeek AI
-        - Sistema híbrido inteligente
-        """)
+        # Verificar estado de API Key
+        api_key = get_deepseek_api_key()
+        if not api_key:
+            st.warning("""
+            🔐 **DeepSeek API No Configurada**
+            
+            Para diagnóstico avanzado con IA, configurá tu API Key en el sidebar.
+            """)
+        else:
+            st.success("✅ **DeepSeek AI Activado** - Diagnóstico avanzado disponible")
         
         # Selección de aceptador (ahora opcional)
         col1, col2 = st.columns(2)
@@ -1514,13 +1625,6 @@ def main():
         if st.session_state.show_feedback:
             st.markdown("---")
             st.subheader("⭐ Ayudá a CasinoPro a Mejorar")
-            
-            st.info("""
-            **Tu experiencia hace mejor a CasinoPro:**
-            - ¿El diagnóstico fue acertado?
-            - ¿La solución propuesta funcionó?
-            - ¿Qué tal la calidad del análisis?
-            """)
             
             col1, col2, col3 = st.columns(3)
             
