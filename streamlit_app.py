@@ -17,19 +17,27 @@ st.set_page_config(
 
 # ==================== CONFIGURACIÓN DEEPSEEK EN SIDEBAR ====================
 def get_deepseek_api_key():
-    """Obtener API Key de forma segura desde sidebar"""
-    # Opción 1: Desde secrets de Streamlit
+    """Obtener API Key de forma segura desde sidebar - VERSIÓN MEJORADA"""
+    
+    # ✅ PRIMERO: Verificar si el usuario acaba de guardar la key
+    if 'api_key_input' in st.session_state and st.session_state.api_key_input:
+        if st.session_state.api_key_input.startswith('sk-'):
+            st.session_state.deepseek_api_key = st.session_state.api_key_input
+            return st.session_state.api_key_input
+    
+    # ✅ SEGUNDO: Verificar session state
+    if 'deepseek_api_key' in st.session_state and st.session_state.deepseek_api_key:
+        if st.session_state.deepseek_api_key.startswith('sk-'):
+            return st.session_state.deepseek_api_key
+    
+    # ✅ TERCERO: Secrets de Streamlit
     if 'DEEPSEEK_API_KEY' in st.secrets:
         return st.secrets['DEEPSEEK_API_KEY']
     
-    # Opción 2: Desde variable de entorno
+    # ✅ CUARTO: Variable de entorno
     import os
     if 'DEEPSEEK_API_KEY' in os.environ:
         return os.environ.get('DEEPSEEK_API_KEY')
-    
-    # Opción 3: Desde session state (input del usuario en sidebar)
-    if 'deepseek_api_key' in st.session_state and st.session_state.deepseek_api_key:
-        return st.session_state.deepseek_api_key
     
     return None
 
@@ -89,14 +97,17 @@ def mostrar_configuracion_api():
 # ==================== DEEPSEEK API REAL ====================
 class DeepSeekAPI:
     def __init__(self):
-        self.api_key = get_deepseek_api_key()
+        # ✅ SOLUCIÓN: No almacenar API Key en init, obtenerla en cada consulta
         self.base_url = "https://api.deepseek.com/v1"
         self.model = "deepseek-chat"
     
     def consultar_deepseek(self, pregunta, contexto_tecnico=""):
-        """Consultar la API real de DeepSeek - VERSIÓN MEJORADA"""
+        """Consultar la API real de DeepSeek - VERSIÓN CORREGIDA"""
         
-        if not self.api_key:
+        # ✅ OBTENER API KEY EN TIEMPO REAL en cada consulta
+        api_key = get_deepseek_api_key()
+        
+        if not api_key:
             return """
             🔐 **Configuración Requerida**
             
@@ -160,7 +171,7 @@ class DeepSeekAPI:
             response = requests.post(
                 endpoint,
                 headers={
-                    "Authorization": f"Bearer {self.api_key}",
+                    "Authorization": f"Bearer {api_key}",  # ✅ Usar api_key obtenida en tiempo real
                     "Content-Type": "application/json"
                 },
                 json={
@@ -629,12 +640,12 @@ class CasinoProAISystem:
         }
         self.conversation_memory.append(entrada_conversacion)
         
-        # ✅✅✅ MEJORA CLAVE: SIEMPRE usar DeepSeek primero cuando la API Key esté configurada
-        if get_deepseek_api_key():
-            # Preparar contexto técnico para DeepSeek
+        # ✅ VERIFICACIÓN EN TIEMPO REAL de la API Key
+        api_key_actual = get_deepseek_api_key()
+        
+        if api_key_actual and api_key_actual.startswith('sk-'):
+            # ✅ DEEPSEEK ACTIVO - Usar API real
             contexto_tecnico = self._preparar_contexto_tecnico(datos_maquina, contexto)
-            
-            # Consultar DeepSeek real
             respuesta_ia = self.deepseek_api.consultar_deepseek(pregunta_usuario, contexto_tecnico)
             
             # Solo si DeepSeek falla completamente, usar sistema local
@@ -645,7 +656,7 @@ class CasinoProAISystem:
             # ✅ MEJORA: Usar respuesta de DeepSeek para TODO (incluyendo saludos)
             return self._formatear_respuesta_deepseek_mejorada(respuesta_ia, pregunta_usuario)
         else:
-            # Si no hay API Key, usar sistema local
+            # ❌ NO HAY API KEY - Usar sistema local
             return self._analizar_problema_local(pregunta_usuario, datos_maquina, contexto)
     
     def _preparar_contexto_tecnico(self, datos_maquina, contexto):
