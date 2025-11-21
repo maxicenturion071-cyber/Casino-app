@@ -144,6 +144,8 @@ class DeepSeekAPI:
         - Basa las soluciones en experiencia real de campo
         - Sé preciso y específico con procedimientos
         - Mantén un estilo técnico pero amigable
+
+        Para saludos y preguntas generales, responde de forma natural y conversacional, manteniendo tu personalidad técnica pero siendo amigable.
         """
         
         try:
@@ -594,7 +596,7 @@ class CasinoProAISystem:
             'nuevos_problemas': {},
             'soluciones_personalizadas': {}
         }
-    
+
     def analizar_problema(self, pregunta_usuario, datos_maquina=None, contexto=""):
         """Análisis inteligente con DeepSeek AI y sistema local"""
         
@@ -611,16 +613,15 @@ class CasinoProAISystem:
         # Preparar contexto técnico para DeepSeek
         contexto_tecnico = self._preparar_contexto_tecnico(datos_maquina, contexto)
         
-        # Consultar DeepSeek real
+        # ✅ SIEMPRE consultar DeepSeek primero, incluso para saludos
         respuesta_ia = self.deepseek_api.consultar_deepseek(pregunta_usuario, contexto_tecnico)
         
-        # Si DeepSeek funciona bien, usar su respuesta
-        if not any(error in respuesta_ia for error in ["❌", "⚠️", "⏰", "Error", "API Key"]):
-            respuesta_formateada = self._formatear_respuesta_deepseek(respuesta_ia)
-            return respuesta_formateada
+        # Solo si DeepSeek falla, usar sistema local
+        if any(error in respuesta_ia for error in ["❌", "⚠️", "⏰", "Error", "API Key"]):
+            return self._analizar_problema_local(pregunta_usuario, datos_maquina, contexto)
         
-        # Si DeepSeek falla, usar sistema local
-        return self._analizar_problema_local(pregunta_usuario, datos_maquina, contexto)
+        # ✅ Usar respuesta de DeepSeek para TODO (incluyendo saludos)
+        return self._formatear_respuesta_deepseek(respuesta_ia)
     
     def _preparar_contexto_tecnico(self, datos_maquina, contexto):
         """Preparar contexto técnico para DeepSeek"""
@@ -765,10 +766,13 @@ class CasinoProAISystem:
             'qué podés hacer', 'en qué me podés ayudar'
         ]
         
+        # ✅ MODIFICACIÓN: Ya no devolvemos 'saludo' o 'pregunta_general'
+        # Dejamos que DeepSeek maneje estas consultas de forma natural
         if any(saludo in pregunta_lower for saludo in saludos):
-            return 'saludo'
-        elif any(pregunta in pregunta_lower for pregunta in preguntas_generales):
-            return 'pregunta_general'
+            return None  # Dejar que DeepSeek maneje los saludos
+        
+        if any(pregunta in pregunta_lower for pregunta in preguntas_generales):
+            return None  # Dejar que DeepSeek maneje preguntas generales
         
         # DETECCIÓN MEJORADA PARA PROCEDIMIENTOS ESPECÍFICOS
         procedimientos_especificos = {
@@ -878,65 +882,8 @@ class CasinoProAISystem:
     def _generar_respuesta_casinopro(self, tipo_problema, datos_maquina, pregunta, contexto):
         """Generar respuesta con el estilo y conocimiento de CasinoPro - MEJORADA"""
         
-        # MANEJAR SALUDOS Y PREGUNTAS GENERALES
-        if tipo_problema == 'saludo':
-            return f"""
-            🎰 **{self.personalidad['nombre']}** - **DeepSeek AI** 🧠
-            
-            ¡Hola! 👋 Soy {self.personalidad['nombre']} con tecnología DeepSeek AI, tu especialista en diagnóstico técnico de máquinas de casino.
-            
-            {self.personalidad['saludo']}
-            
-            🚀 **Puedo ayudarte con:**
-            • Diagnóstico de problemas técnicos con IA avanzada
-            • Procedimientos de Vertex Controller 3.5/4.0
-            • Configuración de aceptadores (MEI, JCM)
-            • Problemas de comunicación y red
-            • Calibración y mantenimiento
-            
-            💡 **Ejemplos de lo que podés preguntar:**
-            • "Mi Vertex no enciende"
-            • "El aceptador rechaza billetes" 
-            • "Cómo hacer ram clear"
-            • "Problema de touch en Aristocrat Helix"
-            
-            ¡Contame, ¿en qué puedo asistirte hoy? 🤖🧠
-            """
-        
-        elif tipo_problema == 'pregunta_general':
-            return f"""
-            🎰 **{self.personalidad['nombre']}** - **DeepSeek AI** 🧠
-            
-            {self.personalidad['saludo']}
-            
-            🔧 **Mi especialidad incluye:**
-            
-            🎯 **Vertex Controller:**
-            • Configuración 3.5/4.0 con DeepSeek AI
-            • Ram Clear y procedimientos
-            • Red progresiva
-            • Lightning Link
-            
-            🏭 **Fabricantes:**
-            • Aristocrat (Helix, Oasis, Edge)
-            • Bally (Alpha Pro, iView)  
-            • IGT (Peak, S3000)
-            • Konami (Concerto, KX)
-            
-            🔌 **Componentes:**
-            • Aceptadores MEI, JCM
-            • Sistemas de comunicación
-            • Pantallas touch
-            • Fuentes de poder
-            
-            💬 **Podés preguntarme:**
-            "Cómo configurar IP del Vertex"
-            "Mi máquina no enciende"
-            "Problema de comunicación MDB"
-            "Calibrar aceptador de billetes"
-            
-            ¡Decime qué problema tenés! 🛠️🧠
-            """
+        # ✅ MODIFICACIÓN: Ya no manejamos saludos y preguntas generales aquí
+        # DeepSeek se encarga de ellas de forma natural
         
         # Primero analizar la pregunta para determinar contexto
         es_sobre_aceptador = any(palabra in pregunta.lower() for palabra in [
