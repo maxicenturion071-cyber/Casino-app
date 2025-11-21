@@ -138,14 +138,15 @@ class DeepSeekAPI:
         {contexto_tecnico}
 
         Responde como experto técnico:
-        - Usa formato técnico claro con pasos numerados
+        - Para saludos y conversación casual: responde de forma natural y amigable
+        - Para problemas técnicos: usa formato técnico claro con pasos numerados
         - Incluye emojis relevantes para cada paso
         - Especifica niveles de prioridad (🚨 URGENTE, 🔴 ALTA, 🟡 MEDIA)
         - Basa las soluciones en experiencia real de campo
         - Sé preciso y específico con procedimientos
         - Mantén un estilo técnico pero amigable
 
-        Para saludos y preguntas generales, responde de forma natural y conversacional, manteniendo tu personalidad técnica pero siendo amigable.
+        IMPORTANTE: Para saludos como "hola", "cómo estás", responde de forma conversacional y natural.
         """
         
         try:
@@ -167,7 +168,7 @@ class DeepSeekAPI:
                             "content": pregunta
                         }
                     ],
-                    "temperature": 0.1,
+                    "temperature": 0.7,  # Aumentado para respuestas más naturales
                     "max_tokens": 2000,
                     "stream": False
                 },
@@ -610,18 +611,23 @@ class CasinoProAISystem:
         }
         self.conversation_memory.append(entrada_conversacion)
         
-        # Preparar contexto técnico para DeepSeek
-        contexto_tecnico = self._preparar_contexto_tecnico(datos_maquina, contexto)
-        
-        # ✅ SIEMPRE consultar DeepSeek primero, incluso para saludos
-        respuesta_ia = self.deepseek_api.consultar_deepseek(pregunta_usuario, contexto_tecnico)
-        
-        # Solo si DeepSeek falla, usar sistema local
-        if any(error in respuesta_ia for error in ["❌", "⚠️", "⏰", "Error", "API Key"]):
+        # ✅✅✅ SOLUCIÓN DEFINITIVA: SIEMPRE usar DeepSeek primero cuando la API Key esté configurada
+        if get_deepseek_api_key():
+            # Preparar contexto técnico para DeepSeek
+            contexto_tecnico = self._preparar_contexto_tecnico(datos_maquina, contexto)
+            
+            # Consultar DeepSeek real
+            respuesta_ia = self.deepseek_api.consultar_deepseek(pregunta_usuario, contexto_tecnico)
+            
+            # Solo si DeepSeek falla, usar sistema local
+            if any(error in respuesta_ia for error in ["❌", "⚠️", "⏰", "Error", "API Key"]):
+                return self._analizar_problema_local(pregunta_usuario, datos_maquina, contexto)
+            
+            # ✅ Usar respuesta de DeepSeek para TODO (incluyendo saludos)
+            return self._formatear_respuesta_deepseek(respuesta_ia)
+        else:
+            # Si no hay API Key, usar sistema local
             return self._analizar_problema_local(pregunta_usuario, datos_maquina, contexto)
-        
-        # ✅ Usar respuesta de DeepSeek para TODO (incluyendo saludos)
-        return self._formatear_respuesta_deepseek(respuesta_ia)
     
     def _preparar_contexto_tecnico(self, datos_maquina, contexto):
         """Preparar contexto técnico para DeepSeek"""
@@ -651,6 +657,10 @@ class CasinoProAISystem:
     
     def _formatear_respuesta_deepseek(self, respuesta_ia):
         """Dar formato CasinoPro a la respuesta de DeepSeek"""
+        # ✅ SOLUCIÓN: No formatear respuestas de saludo, dejar la respuesta natural de DeepSeek
+        if any(saludo in respuesta_ia.lower() for saludo in ['hola', '¡hola', 'hola!', 'cómo estás', 'qué tal']):
+            return respuesta_ia  # Devolver respuesta natural sin formato CasinoPro
+        
         return f"""
         🎰 **CasinoPro - DeepSeek AI** 🧠
         
@@ -665,6 +675,10 @@ class CasinoProAISystem:
     def _analizar_problema_local(self, pregunta_usuario, datos_maquina=None, contexto=""):
         """Sistema local de análisis (para cuando DeepSeek falla)"""
         
+        # Primero verificar si es un saludo
+        if self._es_saludo(pregunta_usuario):
+            return self._generar_respuesta_saludo()
+        
         # Buscar en patrones aprendidos primero
         respuesta_aprendida = self._verificar_patrones_aprendidos(pregunta_usuario)
         if respuesta_aprendida:
@@ -678,6 +692,43 @@ class CasinoProAISystem:
         self._aprender_de_consulta(pregunta_usuario, tipo_problema, datos_maquina)
         
         return respuesta
+    
+    def _es_saludo(self, pregunta):
+        """Detectar si es un saludo"""
+        pregunta_lower = pregunta.lower()
+        saludos = [
+            'hola', 'hola!', 'hola!', 'holaa', 'holaaa', 'holis', 'holiwis',
+            'buenos días', 'buenas tardes', 'buenas noches', 
+            'hey', 'hi', 'hello', 'saludos', 'qué onda',
+            'buen día', 'good morning', 'good afternoon',
+            'cómo estás', 'qué tal', 'cómo te va'
+        ]
+        return any(saludo in pregunta_lower for saludo in saludos)
+    
+    def _generar_respuesta_saludo(self):
+        """Generar respuesta de saludo natural"""
+        return f"""
+        🎰 **{self.personalidad['nombre']}** - **DeepSeek AI** 🧠
+        
+        ¡Hola! 👋 Soy {self.personalidad['nombre']} con tecnología DeepSeek AI, tu especialista en diagnóstico técnico de máquinas de casino.
+        
+        {self.personalidad['saludo']}
+        
+        🚀 **Puedo ayudarte con:**
+        • Diagnóstico de problemas técnicos con IA avanzada
+        • Procedimientos de Vertex Controller 3.5/4.0
+        • Configuración de aceptadores (MEI, JCM)
+        • Problemas de comunicación y red
+        • Calibración y mantenimiento
+        
+        💡 **Ejemplos de lo que podés preguntar:**
+        • "Mi Vertex no enciende"
+        • "El aceptador rechaza billetes" 
+        • "Cómo hacer ram clear"
+        • "Problema de touch en Aristocrat Helix"
+        
+        ¡Contame, ¿en qué puedo asistirte hoy? 🤖🧠
+        """
     
     def _verificar_patrones_aprendidos(self, pregunta):
         """Verificar si hay patrones aprendidos para esta pregunta"""
@@ -750,29 +801,6 @@ class CasinoProAISystem:
     def _detectar_tipo_problema(self, pregunta):
         """Detectar tipo de problema basado en palabras clave - MEJORADA GENERAL"""
         pregunta_lower = pregunta.lower()
-        
-        # DETECCIÓN DE SALUDOS Y PREGUNTAS GENERALES
-        saludos = [
-            'hola', 'hola!', 'hola!', 'holaa', 'holaaa',
-            'buenos días', 'buenas tardes', 'buenas noches', 
-            'hey', 'hi', 'hello', 'saludos', 'qué onda',
-            'buen día', 'good morning', 'good afternoon'
-        ]
-        
-        preguntas_generales = [
-            'cómo estás', 'qué tal', 'cómo te va', 'quién eres',
-            'qué puedes hacer', 'ayuda', 'help', 'qué sos',
-            'para qué servís', 'cuál es tu función', 'qué sabés hacer',
-            'qué podés hacer', 'en qué me podés ayudar'
-        ]
-        
-        # ✅ MODIFICACIÓN: Ya no devolvemos 'saludo' o 'pregunta_general'
-        # Dejamos que DeepSeek maneje estas consultas de forma natural
-        if any(saludo in pregunta_lower for saludo in saludos):
-            return None  # Dejar que DeepSeek maneje los saludos
-        
-        if any(pregunta in pregunta_lower for pregunta in preguntas_generales):
-            return None  # Dejar que DeepSeek maneje preguntas generales
         
         # DETECCIÓN MEJORADA PARA PROCEDIMIENTOS ESPECÍFICOS
         procedimientos_especificos = {
@@ -881,9 +909,6 @@ class CasinoProAISystem:
     
     def _generar_respuesta_casinopro(self, tipo_problema, datos_maquina, pregunta, contexto):
         """Generar respuesta con el estilo y conocimiento de CasinoPro - MEJORADA"""
-        
-        # ✅ MODIFICACIÓN: Ya no manejamos saludos y preguntas generales aquí
-        # DeepSeek se encarga de ellas de forma natural
         
         # Primero analizar la pregunta para determinar contexto
         es_sobre_aceptador = any(palabra in pregunta.lower() for palabra in [
